@@ -1,18 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-/* const response = await fetch(`http://localhost:3000/api/recipe`, {
-  method: "POST",
-  body: JSON.stringify({
-    title,
-    capion
-  }),
-  headers: { Authorization: `Bearer ${token}`},
-}) */
-
 const protectRoute = async (req, res, next) => {
   try {
-    const token = req.header("Authorization").replace("Bearer", "");
+    const token = req.header("Authorization").replace("Bearer", "").trim();
 
     if (!token)
       return res
@@ -20,7 +11,7 @@ const protectRoute = async (req, res, next) => {
         .json({ message: "No authentication token, access denied" });
 
     // verify token
-    const decoded = jwt.verify(token, process.env.JWT.SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // find user
     const user = await User.findById(decoded.userId).select("-password");

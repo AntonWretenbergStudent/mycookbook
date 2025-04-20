@@ -3,38 +3,64 @@ import { StyleSheet } from "react-native";
 import COLORS from "../../constants/colors";
 
 const styles = StyleSheet.create({
+  // Main container and background
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    padding: 16,
-    paddingBottom: 0,
+    backgroundColor: '#000',
   },
+  backgroundGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  
+  // Header styles
+  header: {
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 5,
+  },
+  headerDate: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  
+  // Loading container
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor: '#000',
   },
+  
+  // Profile header
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.cardBackground,
+    backgroundColor: 'rgba(30,40,50,0.8)',
     borderRadius: 16,
     padding: 16,
+    marginHorizontal: 16,
     marginBottom: 16,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
   },
   profileImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
     marginRight: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileInfo: {
     flex: 1,
@@ -42,114 +68,143 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 20,
     fontWeight: "700",
-    color: COLORS.textPrimary,
+    color: 'white',
     marginBottom: 4,
   },
   email: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: 'rgba(255,255,255,0.7)',
     marginBottom: 4,
   },
   memberSince: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: 'rgba(255,255,255,0.5)',
   },
-  logoutButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    padding: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  
+// Logout button styles for profile.styles.js
+logoutButton: {
+  position: 'absolute',
+  right: 16,
+  top: 60,
+  zIndex: 10,
+  backgroundColor: 'rgba(255,255,255,0.15)',
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.2)',
+},
+logoutText: {
+  color: 'white',
+  fontWeight: '600',
+  fontSize: 14,
+},
   logoutText: {
     color: COLORS.white,
     fontWeight: "600",
     marginLeft: 8,
   },
-  booksHeader: {
+  
+  // Recipes header
+  recipesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    marginVertical: 15,
   },
-  booksTitle: {
-    fontSize: 18,
+  recipesTitle: {
+    fontSize: 20,
     fontWeight: "700",
-    color: COLORS.textPrimary,
+    color: 'white',
   },
-  booksCount: {
+  recipesCount: {
     fontSize: 14,
-    color: COLORS.textSecondary,
+    color: 'rgba(255,255,255,0.6)',
   },
-  booksList: {
+  
+  // Recipes list
+  recipesList: {
+    paddingHorizontal: 16,
     paddingBottom: 20,
   },
-  bookItem: {
+  
+  // Recipe item
+  recipeItem: {
     flexDirection: "row",
-    backgroundColor: COLORS.cardBackground,
+    backgroundColor: 'rgba(30,40,50,0.8)',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    overflow: 'hidden',
+    position: 'relative',
   },
-  bookImage: {
+  cardGradient: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+  },
+  recipeImage: {
     width: 70,
     height: 100,
     borderRadius: 8,
     marginRight: 12,
   },
-  bookInfo: {
+  recipeInfo: {
     flex: 1,
     justifyContent: "space-between",
   },
-  bookTitle: {
+  recipeTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.textPrimary,
+    color: 'white',
     marginBottom: 4,
   },
   ratingContainer: {
     flexDirection: "row",
     marginBottom: 4,
   },
-  bookCaption: {
+  recipeCaption: {
     fontSize: 14,
-    color: COLORS.textDark,
+    color: 'rgba(255,255,255,0.7)',
     marginBottom: 4,
     flex: 1,
   },
-  bookDate: {
+  recipeDate: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: 'rgba(255,255,255,0.5)',
   },
+  
+  // Delete button
   deleteButton: {
-    padding: 8,
-    justifyContent: "center",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,59,48,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
+  
+  // Empty state
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
     padding: 40,
     marginTop: 20,
   },
+  crossIcon: {
+    transform: [{ rotate: '45deg' }],
+    marginBottom: 20,
+  },
   emptyText: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.textPrimary,
-    marginTop: 16,
+    color: 'rgba(255,255,255,0.7)',
     marginBottom: 20,
     textAlign: "center",
   },
@@ -158,11 +213,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
   },
   addButtonText: {
     color: COLORS.white,
