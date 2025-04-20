@@ -7,12 +7,16 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Alert,
+  Image,
   StatusBar
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 import { useAuthStore } from "../../store/authStore";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import styles from "../../assets/styles/create.styles";
 
 export default function Create() {
@@ -25,6 +29,51 @@ export default function Create() {
 
   const router = useRouter();
   const { token } = useAuthStore();
+
+  const pickImage = async () => {
+    try {
+      if (Platform.OS !== "web") {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert(
+            "Permission Denied",
+            "We need camera roll permissions to upload an image"
+          );
+          return;
+        }
+      }
+
+      // launch image library
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.1,
+        base64: true,
+      });
+
+      if (!result.canceled) {
+        setImage(result.assets[0].uri);
+
+        // if base64 is provided, use it
+        if (result.assets[0].base64) {
+          setImageBase64(result.assets[0].base64);
+        } else {
+          // otherwise convert to base64
+          const base64 = await FileSystem.readAsStringAsync(
+            result.assets[0].uri,
+            {
+              encoding: FileSystem.EncodingType.Base64,
+            }
+          );
+          setImageBase64(base64);
+        }
+      }
+    } catch (error) {
+      console.log("Error picking image:", error);
+      Alert.alert("Error", "There was a problem selecting your image");
+    }
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -64,6 +113,27 @@ export default function Create() {
                     onChangeText={setTitle}
                   />
                 </View>
+              </View>
+
+              {/* IMAGE */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Recipe Image</Text>
+                <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+                  {image ? (
+                    <Image source={{ uri: image }} style={styles.previewImage} />
+                  ) : (
+                    <View style={styles.placeholderContainer}>
+                      <Ionicons
+                        name="image-outline"
+                        size={40}
+                        color="rgba(255,255,255,0.5)"
+                      />
+                      <Text style={styles.placeholderText}>
+                        Tap to select image
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </View>
 
               {/* CAPTION */}
