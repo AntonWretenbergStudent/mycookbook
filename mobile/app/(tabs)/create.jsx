@@ -5,9 +5,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TextInput,
+  TouchableOpacity,
   StatusBar
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import COLORS from "../../constants/colors";
 import { useAuthStore } from "../../store/authStore";
 import styles from "../../assets/styles/create.styles";
 
@@ -42,7 +46,52 @@ export default function Create() {
         >
           <View style={styles.card}>
             <View style={styles.form}>
-              {/* Form will be added here */}
+              {/* RECIPE TITLE */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Recipe Title</Text>
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="receipt-outline"
+                    size={20}
+                    color="rgba(255,255,255,0.7)"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter the name of the recipe"
+                    placeholderTextColor="rgba(255,255,255,0.4)"
+                    value={title}
+                    onChangeText={setTitle}
+                  />
+                </View>
+              </View>
+
+              {/* CAPTION */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Caption</Text>
+                <TextInput
+                  style={styles.textArea}
+                  placeholder="Describe the meal..."
+                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  value={caption}
+                  onChangeText={setCaption}
+                  multiline
+                />
+              </View>
+
+              {/* UPLOAD BUTTON (non-functional for now) */}
+              <TouchableOpacity
+                style={styles.button}
+                disabled={loading}
+              >
+                <Ionicons
+                  name="cloud-upload-outline"
+                  size={20}
+                  color={COLORS.white}
+                  style={styles.buttonIcon}
+                />
+                <Text style={styles.buttonText}>Share Recipe</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
