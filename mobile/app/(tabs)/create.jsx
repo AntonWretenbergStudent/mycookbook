@@ -75,6 +75,26 @@ export default function Create() {
     }
   };
 
+  const renderRatingPicker = () => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <TouchableOpacity
+          key={i}
+          onPress={() => setRating(i)}
+          style={styles.starButton}
+        >
+          <Ionicons
+            name={i <= rating ? "star" : "star-outline"}
+            size={32}
+            color={i <= rating ? "#f4b400" : "rgba(255,255,255,0.5)"}
+          />
+        </TouchableOpacity>
+      );
+    }
+    return <View style={styles.ratingContainer}>{stars}</View>;
+  };
+
   return (
     <View style={styles.mainContainer}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
@@ -113,6 +133,12 @@ export default function Create() {
                     onChangeText={setTitle}
                   />
                 </View>
+              </View>
+
+              {/* RATING */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Your Rating</Text>
+                {renderRatingPicker()}
               </View>
 
               {/* IMAGE */}
