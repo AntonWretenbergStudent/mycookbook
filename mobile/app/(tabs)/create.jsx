@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 import COLORS from "../../constants/colors";
 import { useAuthStore } from "../../store/authStore";
 import * as ImagePicker from "expo-image-picker";
@@ -154,6 +155,13 @@ export default function Create() {
     <View style={styles.mainContainer}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       
+      {/* Background gradient */}
+      <LinearGradient
+        colors={[COLORS.primary, 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
+        style={styles.backgroundGradient}
+        locations={[0, 0.3, 0.6]}
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>New Recipe</Text>
@@ -170,7 +178,7 @@ export default function Create() {
         >
           <View style={styles.card}>
             <View style={styles.form}>
-              {/* RECIPE TITLE */}
+                {/* RECIPE TITLE */}
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Recipe Title</Text>
                 <View style={styles.inputContainer}>
