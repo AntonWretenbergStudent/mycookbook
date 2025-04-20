@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  ActivityIndicator,
   StatusBar
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -17,6 +18,7 @@ import COLORS from "../../constants/colors";
 import { useAuthStore } from "../../store/authStore";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import { API_URI } from "../../constants/api";
 import styles from "../../assets/styles/create.styles";
 
 export default function Create() {
@@ -72,6 +74,59 @@ export default function Create() {
     } catch (error) {
       console.log("Error picking image:", error);
       Alert.alert("Error", "There was a problem selecting your image");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!title || !caption || !imageBase64 || !rating) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const uriParts = image.split(".");
+      const fileType = uriParts[uriParts.length - 1];
+      const imageType = fileType
+        ? `image/${fileType.toLowerCase()}`
+        : "image/jpeg";
+
+      const imageDataUrl = `data:${imageType};base64,${imageBase64}`;
+
+      const response = await fetch(`${API_URI}/recipes`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          caption,
+          rating: rating.toString(),
+          image: imageDataUrl,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
+      }
+
+      Alert.alert("Success", "Your recipe has been posted!");
+      setTitle("");
+      setCaption("");
+      setRating(3);
+      setImage(null);
+      setImageBase64(null);
+
+      router.push("/");
+    } catch (error) {
+      console.error("Error creating post:", error);
+      Alert.alert("Error", error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -175,18 +230,25 @@ export default function Create() {
                 />
               </View>
 
-              {/* UPLOAD BUTTON (non-functional for now) */}
+              {/* UPLOAD */}
               <TouchableOpacity
                 style={styles.button}
+                onPress={handleSubmit}
                 disabled={loading}
               >
-                <Ionicons
-                  name="cloud-upload-outline"
-                  size={20}
-                  color={COLORS.white}
-                  style={styles.buttonIcon}
-                />
-                <Text style={styles.buttonText}>Share Recipe</Text>
+                {loading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <>
+                    <Ionicons
+                      name="cloud-upload-outline"
+                      size={20}
+                      color={COLORS.white}
+                      style={styles.buttonIcon}
+                    />
+                    <Text style={styles.buttonText}>Share Recipe</Text>
+                  </>
+                )}
               </TouchableOpacity>
             </View>
           </View>
