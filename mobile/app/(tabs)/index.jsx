@@ -7,48 +7,48 @@ import {
   RefreshControl,
   StatusBar,
   Alert,
-} from "react-native";
-import { useAuthStore } from "../../store/authStore";
-import { Image } from "expo-image";
-import { useEffect, useState, useCallback } from "react";
-import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+} from "react-native"
+import { useAuthStore } from "../../store/authStore"
+import { Image } from "expo-image"
+import { useEffect, useState, useCallback } from "react"
+import { useFocusEffect } from '@react-navigation/native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from "@expo/vector-icons"
+import { useRouter } from "expo-router"
 
-import styles from "../../assets/styles/home.styles";
-import COLORS from "../../constants/colors";
-import Loader from "../../components/Loader";
-import { API_URI } from "../../constants/api";
-import { formatPublishDate } from "../../lib/utils";
+import styles from "../../assets/styles/home.styles"
+import COLORS from "../../constants/colors"
+import Loader from "../../components/Loader"
+import { API_URI } from "../../constants/api"
+import { formatPublishDate } from "../../lib/utils"
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export default function Home() {
-  const router = useRouter();
-  const { token, user } = useAuthStore();
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [page, setpage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
-  const [bookmarkLoading, setBookmarkLoading] = useState({});
+  const router = useRouter()
+  const { token, user } = useAuthStore()
+  const [recipes, setRecipes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [page, setpage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [bookmarkedRecipes, setBookmarkedRecipes] = useState([])
+  const [bookmarkLoading, setBookmarkLoading] = useState({})
 
   // Load bookmarks from server when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      fetchBookmarkedRecipes();
-      return () => {};
+      fetchBookmarkedRecipes()
+      return () => {}
     }, [])
-  );
+  )
 
   // Function to open recipe detail
   const openRecipeDetail = (recipe) => {
     // Format the nutrition data for URL params
     const nutritionParam = recipe.nutrition 
       ? JSON.stringify(recipe.nutrition)
-      : JSON.stringify({ calories: 0 });
+      : JSON.stringify({ calories: 0 })
     
     router.push({
       pathname: "/recipe-detail",
@@ -64,48 +64,48 @@ export default function Home() {
         nutrition: nutritionParam,
         isBookmarked: isBookmarked(recipe._id).toString()
       }
-    });
-  };
+    })
+  }
 
   // Fetch bookmarked recipes from the server
   const fetchBookmarkedRecipes = async () => {
     try {
       const response = await fetch(`${API_URI}/bookmarks`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
+      })
 
-      if (!response.ok) throw new Error("Failed to fetch bookmarks");
+      if (!response.ok) throw new Error("Failed to fetch bookmarks")
 
-      const data = await response.json();
+      const data = await response.json()
       // Store just the IDs for easy checking
-      setBookmarkedRecipes(data.map(recipe => recipe._id));
+      setBookmarkedRecipes(data.map(recipe => recipe._id))
     } catch (error) {
-      console.error("Error fetching bookmarks:", error);
+      console.error("Error fetching bookmarks:", error)
     }
-  };
+  }
 
   // Check if a recipe is bookmarked
   const isBookmarked = (recipeId) => {
-    return bookmarkedRecipes.includes(recipeId);
-  };
+    return bookmarkedRecipes.includes(recipeId)
+  }
 
   // Handle bookmark toggle
   const handleBookmark = async (recipe, e) => {
-    if (e) e.stopPropagation();
+    if (e) e.stopPropagation()
     
     try {
-      setBookmarkLoading(prev => ({ ...prev, [recipe._id]: true }));
+      setBookmarkLoading(prev => ({ ...prev, [recipe._id]: true }))
       
       if (isBookmarked(recipe._id)) {
         // Remove bookmark
         const response = await fetch(`${API_URI}/bookmarks/${recipe._id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
-        });
+        })
 
-        if (!response.ok) throw new Error("Failed to remove bookmark");
+        if (!response.ok) throw new Error("Failed to remove bookmark")
         
-        setBookmarkedRecipes(prev => prev.filter(id => id !== recipe._id));
+        setBookmarkedRecipes(prev => prev.filter(id => id !== recipe._id))
       } else {
         // Add bookmark
         const response = await fetch(`${API_URI}/bookmarks`, {
@@ -115,35 +115,35 @@ export default function Home() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ recipeId: recipe._id }),
-        });
+        })
 
-        if (!response.ok) throw new Error("Failed to add bookmark");
+        if (!response.ok) throw new Error("Failed to add bookmark")
         
-        setBookmarkedRecipes(prev => [...prev, recipe._id]);
+        setBookmarkedRecipes(prev => [...prev, recipe._id])
       }
     } catch (error) {
-      console.error("Error updating bookmark:", error);
-      Alert.alert("Error", error.message || "Failed to update bookmark");
+      console.error("Error updating bookmark:", error)
+      Alert.alert("Error", error.message || "Failed to update bookmark")
     } finally {
-      setBookmarkLoading(prev => ({ ...prev, [recipe._id]: false }));
+      setBookmarkLoading(prev => ({ ...prev, [recipe._id]: false }))
     }
-  };
+  }
 
   const fetchRecipes = async (pageNum = 1, refresh = false) => {
     try {
-      if (refresh) setRefreshing(true);
-      else if (pageNum === 1) setLoading(true);
+      if (refresh) setRefreshing(true)
+      else if (pageNum === 1) setLoading(true)
 
       const response = await fetch(
         `${API_URI}/recipes?page=${pageNum}&limit=5`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
-      );
+      )
 
-      const data = await response.json();
+      const data = await response.json()
       if (!response.ok)
-        throw new Error(data.message || "Failed to fetch recipes");
+        throw new Error(data.message || "Failed to fetch recipes")
 
       const uniqueRecipes =
         refresh || pageNum === 1
@@ -152,34 +152,34 @@ export default function Home() {
               new Set([...recipes, ...data.recipes].map((recipe) => recipe._id))
             ).map((id) =>
               [...recipes, ...data.recipes].find((recipe) => recipe._id === id)
-            );
+            )
 
-      setRecipes(uniqueRecipes);
+      setRecipes(uniqueRecipes)
 
-      setHasMore(pageNum < data.totalPages);
-      setpage(pageNum);
+      setHasMore(pageNum < data.totalPages)
+      setpage(pageNum)
     } catch (error) {
-      console.log("Error fetching recipes", error);
+      console.log("Error fetching recipes", error)
     } finally {
       if (refresh) {
         await sleep(800)
-        setRefreshing(false);
-      } else setLoading(false);
+        setRefreshing(false)
+      } else setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchRecipes();
-  }, []);
+    fetchRecipes()
+  }, [])
 
   const handleLoadMore = async () => {
     if (hasMore && !loading && !refreshing) {
-      await fetchRecipes(page + 1);
+      await fetchRecipes(page + 1)
     }
-  };
+  }
 
   const renderRatingStars = (rating) => {
-    const stars = [];
+    const stars = []
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <Ionicons
@@ -189,10 +189,10 @@ export default function Home() {
           color={i <= rating ? "#f4b400" : "rgba(255,255,255,0.5)"}
           style={{ marginRight: 2 }}
         />
-      );
+      )
     }
-    return stars;
-  };
+    return stars
+  }
 
   const renderItem = ({ item }) => (
     <View style={styles.recipeCard}>
@@ -250,11 +250,14 @@ export default function Home() {
         </View>
       </TouchableOpacity>
     </View>
-  );
+  )
 
   const handleRefresh = async () => {
-    await fetchRecipes(1, true);
-  };
+    await Promise.all([
+      fetchRecipes(1, true),
+      fetchBookmarkedRecipes()
+    ])
+  }
 
   if (loading) return <Loader />
 
@@ -331,5 +334,5 @@ export default function Home() {
         }
       />
     </View>
-  );
+  )
 }
