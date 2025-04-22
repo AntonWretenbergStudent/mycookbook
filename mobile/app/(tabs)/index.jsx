@@ -30,6 +30,8 @@ export default function Home() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setpage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
+  const [bookmarkLoading, setBookmarkLoading] = useState({});
 
   // Function to open recipe detail
   const openRecipeDetail = (recipe) => {
@@ -50,9 +52,34 @@ export default function Home() {
         userImage: recipe.user.profileImage,
         createdAt: recipe.createdAt,
         nutrition: nutritionParam,
-        isBookmarked: "false"
+        isBookmarked: isBookmarked(recipe._id).toString()
       }
     });
+  };
+
+  // Check if a recipe is bookmarked
+  const isBookmarked = (recipeId) => {
+    return bookmarkedRecipes.includes(recipeId);
+  };
+
+  // Handle bookmark toggle (placeholder implementation)
+  const handleBookmark = async (recipe, e) => {
+    if (e) e.stopPropagation();
+    
+    // Set loading state for this recipe's bookmark
+    setBookmarkLoading(prev => ({ ...prev, [recipe._id]: true }));
+    
+    // Toggle bookmark status (placeholder)
+    await sleep(500); // Simulate network request
+    
+    if (isBookmarked(recipe._id)) {
+      setBookmarkedRecipes(prev => prev.filter(id => id !== recipe._id));
+    } else {
+      setBookmarkedRecipes(prev => [...prev, recipe._id]);
+    }
+    
+    // Clear loading state
+    setBookmarkLoading(prev => ({ ...prev, [recipe._id]: false }));
   };
 
   const fetchRecipes = async (pageNum = 1, refresh = false) => {
@@ -150,6 +177,21 @@ export default function Home() {
         <View style={styles.recipeDetails}>
           <View style={styles.titleContainer}>
             <Text style={styles.recipeTitle}>{item.title}</Text>
+            <TouchableOpacity 
+              style={styles.bookmarkButton}
+              onPress={(e) => handleBookmark(item, e)}
+              disabled={bookmarkLoading[item._id]}
+            >
+              {bookmarkLoading[item._id] ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons 
+                  name={isBookmarked(item._id) ? "bookmark" : "bookmark-outline"} 
+                  size={24} 
+                  color="white" 
+                />
+              )}
+            </TouchableOpacity>
           </View>
           <View style={styles.ratingContainer}>
             {renderRatingStars(item.rating)}
