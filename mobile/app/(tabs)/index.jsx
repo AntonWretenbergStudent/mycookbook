@@ -6,10 +6,12 @@ import {
   ActivityIndicator,
   RefreshControl,
   StatusBar,
+  Alert,
 } from "react-native";
 import { useAuthStore } from "../../store/authStore";
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -32,6 +34,14 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const [bookmarkedRecipes, setBookmarkedRecipes] = useState([]);
   const [bookmarkLoading, setBookmarkLoading] = useState({});
+
+  // Load bookmarks from server when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchBookmarkedRecipes();
+      return () => {};
+    }, [])
+  );
 
   // Function to open recipe detail
   const openRecipeDetail = (recipe) => {
@@ -57,29 +67,66 @@ export default function Home() {
     });
   };
 
+  // Fetch bookmarked recipes from the server
+  const fetchBookmarkedRecipes = async () => {
+    try {
+      const response = await fetch(`${API_URI}/bookmarks`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch bookmarks");
+
+      const data = await response.json();
+      // Store just the IDs for easy checking
+      setBookmarkedRecipes(data.map(recipe => recipe._id));
+    } catch (error) {
+      console.error("Error fetching bookmarks:", error);
+    }
+  };
+
   // Check if a recipe is bookmarked
   const isBookmarked = (recipeId) => {
     return bookmarkedRecipes.includes(recipeId);
   };
 
-  // Handle bookmark toggle (placeholder implementation)
+  // Handle bookmark toggle
   const handleBookmark = async (recipe, e) => {
     if (e) e.stopPropagation();
     
-    // Set loading state for this recipe's bookmark
-    setBookmarkLoading(prev => ({ ...prev, [recipe._id]: true }));
-    
-    // Toggle bookmark status (placeholder)
-    await sleep(500); // Simulate network request
-    
-    if (isBookmarked(recipe._id)) {
-      setBookmarkedRecipes(prev => prev.filter(id => id !== recipe._id));
-    } else {
-      setBookmarkedRecipes(prev => [...prev, recipe._id]);
+    try {
+      setBookmarkLoading(prev => ({ ...prev, [recipe._id]: true }));
+      
+      if (isBookmarked(recipe._id)) {
+        // Remove bookmark
+        const response = await fetch(`${API_URI}/bookmarks/${recipe._id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) throw new Error("Failed to remove bookmark");
+        
+        setBookmarkedRecipes(prev => prev.filter(id => id !== recipe._id));
+      } else {
+        // Add bookmark
+        const response = await fetch(`${API_URI}/bookmarks`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ recipeId: recipe._id }),
+        });
+
+        if (!response.ok) throw new Error("Failed to add bookmark");
+        
+        setBookmarkedRecipes(prev => [...prev, recipe._id]);
+      }
+    } catch (error) {
+      console.error("Error updating bookmark:", error);
+      Alert.alert("Error", error.message || "Failed to update bookmark");
+    } finally {
+      setBookmarkLoading(prev => ({ ...prev, [recipe._id]: false }));
     }
-    
-    // Clear loading state
-    setBookmarkLoading(prev => ({ ...prev, [recipe._id]: false }));
   };
 
   const fetchRecipes = async (pageNum = 1, refresh = false) => {
