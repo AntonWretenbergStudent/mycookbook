@@ -68,4 +68,27 @@ router.post("/", protectRoute, async (req, res) => {
   }
 });
 
+// Remove a bookmark
+router.delete("/:recipeId", protectRoute, async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+
+    const bookmark = await Bookmark.findOne({
+      user: req.user._id,
+      recipe: recipeId
+    });
+
+    if (!bookmark) {
+      return res.status(404).json({ message: "Bookmark not found" });
+    }
+
+    await bookmark.deleteOne();
+
+    res.json({ message: "Bookmark removed successfully" });
+  } catch (error) {
+    console.log("Error removing bookmark", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
