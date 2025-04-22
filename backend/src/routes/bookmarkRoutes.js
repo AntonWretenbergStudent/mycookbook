@@ -91,4 +91,21 @@ router.delete("/:recipeId", protectRoute, async (req, res) => {
   }
 });
 
+// Check if a recipe is bookmarked by the current user
+router.get("/check/:recipeId", protectRoute, async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+
+    const bookmark = await Bookmark.findOne({
+      user: req.user._id,
+      recipe: recipeId
+    });
+
+    res.json({ isBookmarked: !!bookmark });
+  } catch (error) {
+    console.log("Error checking bookmark", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
