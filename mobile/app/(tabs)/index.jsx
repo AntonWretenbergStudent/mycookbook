@@ -31,6 +31,30 @@ export default function Home() {
   const [page, setpage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  // Function to open recipe detail
+  const openRecipeDetail = (recipe) => {
+    // Format the nutrition data for URL params
+    const nutritionParam = recipe.nutrition 
+      ? JSON.stringify(recipe.nutrition)
+      : JSON.stringify({ calories: 0 });
+    
+    router.push({
+      pathname: "/recipe-detail",
+      params: {
+        id: recipe._id,
+        title: recipe.title,
+        image: recipe.image,
+        caption: recipe.description || recipe.caption,
+        rating: recipe.rating.toString(),
+        username: recipe.user.username,
+        userImage: recipe.user.profileImage,
+        createdAt: recipe.createdAt,
+        nutrition: nutritionParam,
+        isBookmarked: "false"
+      }
+    });
+  };
+
   const fetchRecipes = async (pageNum = 1, refresh = false) => {
     try {
       if (refresh) setRefreshing(true);
@@ -80,11 +104,28 @@ export default function Home() {
     }
   };
 
+  const renderRatingStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i <= rating ? "star" : "star-outline"}
+          size={16}
+          color={i <= rating ? "#f4b400" : "rgba(255,255,255,0.5)"}
+          style={{ marginRight: 2 }}
+        />
+      );
+    }
+    return stars;
+  };
+
   const renderItem = ({ item }) => (
     <View style={styles.recipeCard}>
       <TouchableOpacity 
         activeOpacity={0.9}
         style={styles.recipeCardContent} 
+        onPress={() => openRecipeDetail(item)}
       >
         <View style={styles.recipeHeader}>
           <View style={styles.userInfo}>
@@ -109,6 +150,9 @@ export default function Home() {
         <View style={styles.recipeDetails}>
           <View style={styles.titleContainer}>
             <Text style={styles.recipeTitle}>{item.title}</Text>
+          </View>
+          <View style={styles.ratingContainer}>
+            {renderRatingStars(item.rating)}
           </View>
           <Text style={styles.caption} numberOfLines={2}>{item.caption}</Text>
           <Text style={styles.date}>
