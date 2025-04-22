@@ -3,6 +3,7 @@ import cors from "cors"
 import "dotenv/config"
 import authRoutes from "./routes/authRoutes.js"
 import recipesRoutes from "./routes/recipesRoutes.js"
+import bookmarkRoutes from "./routes/bookmarkRoutes.js"
 
 import { connectDB } from "./lib/db.js"
 
@@ -16,7 +17,7 @@ app.use(cors())
 
 app.use("/api/auth", authRoutes)
 app.use("/api/recipes", recipesRoutes)
-
+app.use("/api/bookmarks", bookmarkRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
