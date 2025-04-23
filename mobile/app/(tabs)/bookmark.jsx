@@ -6,7 +6,9 @@ import {
   RefreshControl,
   Alert,
   ActivityIndicator,
-  StatusBar
+  StatusBar,
+  TextInput,
+  ScrollView
 } from "react-native";
 import React, { useState, useCallback } from "react";
 import { Image } from "expo-image";
@@ -24,40 +26,45 @@ import styles from "../../assets/styles/bookmark.styles";
 // For simulating delay like in your other components
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const PAGE_SIZE = 10;
+// Filter categories
+const FILTERS = {
+  ALL: 'all',
+  HIGH_PROTEIN: 'high_protein',
+  LOW_CALORIE: 'low_calorie',
+  HIGH_RATED: 'high_rated'
+};
 
 export default function Bookmark() {
   const [bookmarks, setBookmarks] = useState([]);
+  const [allBookmarks, setAllBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [removeLoading, setRemoveLoading] = useState({});
   const [error, setError] = useState(null);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState(FILTERS.ALL);
   const router = useRouter();
   const { token } = useAuthStore();
 
   // Load bookmarks when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      fetchBookmarks(1, true);
+      fetchBookmarks();
       return () => {};
     }, [])
   );
 
-  const fetchBookmarks = async (pageNum = 1, reset = false) => {
-    if (pageNum === 1) setError(null);
+  const fetchBookmarks = async () => {
+    setError(null);
     
     try {
-      if (pageNum === 1) setLoading(true);
-      if (pageNum > 1) setLoadingMore(true);
+      setLoading(true);
       
       if (!token) {
         throw new Error("Authentication required");
       }
       
-      const response = await fetch(`${API_URI}/bookmarks?page=${pageNum}&limit=${PAGE_SIZE}`, {
+      const response = await fetch(`${API_URI}/bookmarks`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -73,39 +80,67 @@ export default function Bookmark() {
       const data = await response.json();
       const newBookmarks = Array.isArray(data) ? data : [];
       
-      // Check if we've reached the end
-      setHasMore(newBookmarks.length === PAGE_SIZE);
-      
-      // Update bookmarks state
-      if (reset || pageNum === 1) {
-        setBookmarks(newBookmarks);
-        setPage(1);
-      } else {
-        setBookmarks(prev => [...prev, ...newBookmarks]);
-      }
-      
-      setPage(pageNum);
+      setAllBookmarks(newBookmarks);
+      applyFilters(newBookmarks, searchQuery, activeFilter);
     } catch (error) {
       console.error('Error loading bookmarks:', error);
       setError(error.message);
-      if (pageNum === 1) Alert.alert("Error", error.message);
+      Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
-      setLoadingMore(false);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await sleep(800);
-    await fetchBookmarks(1, true);
+    await fetchBookmarks();
     setRefreshing(false);
   };
 
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchBookmarks(page + 1);
+  const applyFilters = (data, query, filter) => {
+    let result = [...data];
+    
+    // Apply search query
+    if (query.trim()) {
+      const searchText = query.toLowerCase();
+      result = result.filter(item => 
+        (item.title && item.title.toLowerCase().includes(searchText)) ||
+        (item.caption && item.caption.toLowerCase().includes(searchText)) ||
+        (item.username && item.username.toLowerCase().includes(searchText))
+      );
     }
+    
+    // Apply category filter
+    if (filter !== FILTERS.ALL) {
+      switch (filter) {
+        case FILTERS.HIGH_PROTEIN:
+          result = result.filter(item => 
+            item.nutrition && item.nutrition.protein > 15
+          );
+          break;
+        case FILTERS.LOW_CALORIE:
+          result = result.filter(item => 
+            item.nutrition && item.nutrition.calories < 400
+          );
+          break;
+        case FILTERS.HIGH_RATED:
+          result = result.filter(item => item.rating >= 4);
+          break;
+      }
+    }
+    
+    setBookmarks(result);
+  };
+
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    applyFilters(allBookmarks, text, activeFilter);
+  };
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+    applyFilters(allBookmarks, searchQuery, filter);
   };
 
   const removeBookmark = async (recipeId) => {
@@ -119,7 +154,9 @@ export default function Bookmark() {
 
       if (!response.ok) throw new Error("Failed to remove bookmark");
       
-      setBookmarks(prev => prev.filter(bookmark => bookmark._id !== recipeId));
+      const updatedBookmarks = allBookmarks.filter(bookmark => bookmark._id !== recipeId);
+      setAllBookmarks(updatedBookmarks);
+      applyFilters(updatedBookmarks, searchQuery, activeFilter);
       Alert.alert("Success", "Recipe removed from bookmarks");
     } catch (error) {
       console.error('Error removing bookmark:', error);
@@ -257,15 +294,32 @@ export default function Bookmark() {
     </TouchableOpacity>
   );
 
-  const renderFooter = () => {
-    if (!loadingMore) return null;
-    
-    return (
-      <View style={{ paddingVertical: 20 }}>
-        <ActivityIndicator size="small" color={COLORS.primary} />
-      </View>
-    );
-  };
+  const FilterButton = ({ title, active, onPress, iconName }) => (
+    <TouchableOpacity 
+      style={{
+        backgroundColor: active ? COLORS.primary : 'rgba(255,255,255,0.1)',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginRight: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+      onPress={onPress}
+    >
+      {iconName && (
+        <Ionicons 
+          name={iconName} 
+          size={16} 
+          color="white" 
+          style={{ marginRight: 5 }}
+        />
+      )}
+      <Text style={{ color: 'white', fontWeight: active ? '600' : '400' }}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
 
   if (loading && !refreshing) {
     return <Loader />;
@@ -285,6 +339,69 @@ export default function Bookmark() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Saved Recipes</Text>
+        
+        {/* Search input */}
+        <View style={{
+          backgroundColor: 'rgba(255,255,255,0.1)',
+          borderRadius: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 12,
+          marginTop: 10,
+          marginBottom: 15,
+        }}>
+          <Ionicons name="search" size={20} color="rgba(255,255,255,0.5)" />
+          <TextInput
+            style={{
+              flex: 1,
+              height: 44,
+              color: 'white',
+              marginLeft: 8,
+              fontSize: 16,
+            }}
+            placeholder="Search saved recipes..."
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => handleSearch('')}>
+              <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.5)" />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+        
+        {/* Filter chips */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 10 }}
+        >
+          <FilterButton 
+            title="All Recipes" 
+            active={activeFilter === FILTERS.ALL}
+            onPress={() => handleFilterChange(FILTERS.ALL)}
+            iconName="grid-outline"
+          />
+          <FilterButton 
+            title="High Protein" 
+            active={activeFilter === FILTERS.HIGH_PROTEIN}
+            onPress={() => handleFilterChange(FILTERS.HIGH_PROTEIN)}
+            iconName="barbell-outline"
+          />
+          <FilterButton 
+            title="Low Calorie" 
+            active={activeFilter === FILTERS.LOW_CALORIE}
+            onPress={() => handleFilterChange(FILTERS.LOW_CALORIE)}
+            iconName="leaf-outline"
+          />
+          <FilterButton 
+            title="Highly Rated" 
+            active={activeFilter === FILTERS.HIGH_RATED}
+            onPress={() => handleFilterChange(FILTERS.HIGH_RATED)}
+            iconName="star-outline"
+          />
+        </ScrollView>
       </View>
 
       <FlatList
@@ -301,26 +418,35 @@ export default function Bookmark() {
             tintColor="white"
           />
         }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
         ListHeaderComponent={
           <View style={styles.listHeader}>
             <Text style={styles.bookmarkCount}>
-              {bookmarks.length} {bookmarks.length === 1 ? 'recipe' : 'recipes'} saved
+              {bookmarks.length} {bookmarks.length === 1 ? 'recipe' : 'recipes'} 
+              {activeFilter !== FILTERS.ALL && (
+                activeFilter === FILTERS.HIGH_PROTEIN ? ' (High Protein)' :
+                activeFilter === FILTERS.LOW_CALORIE ? ' (Low Calorie)' :
+                activeFilter === FILTERS.HIGH_RATED ? ' (Highly Rated)' : ''
+              )}
+              {searchQuery ? ` matching "${searchQuery}"` : ''}
             </Text>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons name="bookmark-outline" size={60} color="rgba(255,255,255,0.3)" />
+            <Ionicons 
+              name={searchQuery ? "search-outline" : "bookmark-outline"} 
+              size={60} 
+              color="rgba(255,255,255,0.3)" 
+            />
             <Text style={styles.emptyText}>
-              {error ? "Something went wrong" : "No bookmarked recipes"}
+              {error ? "Something went wrong" : 
+               bookmarks.length === 0 && allBookmarks.length > 0 ? "No matching recipes" :
+               "No bookmarked recipes"}
             </Text>
             <Text style={styles.emptySubtext}>
-              {error 
-                ? "Pull down to refresh or try again later" 
-                : "Bookmark your favorite recipes to see them here!"}
+              {error ? "Pull down to refresh or try again later" : 
+               bookmarks.length === 0 && allBookmarks.length > 0 ? "Try different search or filter options" :
+               "Bookmark your favorite recipes to see them here!"}
             </Text>
             <TouchableOpacity
               style={styles.browseButton}
