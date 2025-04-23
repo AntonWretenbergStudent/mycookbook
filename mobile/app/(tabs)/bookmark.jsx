@@ -43,6 +43,10 @@ export default function Bookmark() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState(FILTERS.ALL);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState({});
+  const [batchDeleting, setBatchDeleting] = useState(false);
+  
   const router = useRouter();
   const { token } = useAuthStore();
 
@@ -50,7 +54,11 @@ export default function Bookmark() {
   useFocusEffect(
     useCallback(() => {
       fetchBookmarks();
-      return () => {};
+      return () => {
+        // Reset selection mode when leaving the screen
+        setSelectionMode(false);
+        setSelectedItems({});
+      };
     }, [])
   );
 
@@ -143,6 +151,34 @@ export default function Bookmark() {
     applyFilters(allBookmarks, searchQuery, filter);
   };
 
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedItems({});
+  };
+
+  const toggleItemSelection = (id) => {
+    setSelectedItems(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const selectAll = () => {
+    const newSelected = {};
+    bookmarks.forEach(item => {
+      newSelected[item._id] = true;
+    });
+    setSelectedItems(newSelected);
+  };
+
+  const deselectAll = () => {
+    setSelectedItems({});
+  };
+
+  const getSelectedCount = () => {
+    return Object.values(selectedItems).filter(Boolean).length;
+  };
+
   const removeBookmark = async (recipeId) => {
     try {
       setRemoveLoading(prev => ({ ...prev, [recipeId]: true }));
@@ -177,9 +213,90 @@ export default function Bookmark() {
       ]
     );
   };
+
+  const deleteSelectedBookmarks = async () => {
+    const selectedIds = Object.entries(selectedItems)
+      .filter(([_, selected]) => selected)
+      .map(([id]) => id);
+    
+    if (selectedIds.length === 0) return;
+    
+    try {
+      setBatchDeleting(true);
+      
+      // Create an array of promises for each delete request
+      const deletePromises = selectedIds.map(id => 
+        fetch(`${API_URI}/bookmarks/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      );
+      
+      // Wait for all delete requests to complete
+      const results = await Promise.allSettled(deletePromises);
+      
+      // Count successful and failed deletions
+      const successful = results.filter(r => r.status === 'fulfilled' && r.value.ok).length;
+      const failed = selectedIds.length - successful;
+      
+      // Update bookmarks state
+      const updatedBookmarks = allBookmarks.filter(bookmark => 
+        !selectedItems[bookmark._id]
+      );
+      
+      setAllBookmarks(updatedBookmarks);
+      applyFilters(updatedBookmarks, searchQuery, activeFilter);
+      
+      // Show result message
+      if (failed === 0) {
+        Alert.alert(
+          "Success", 
+          `${successful} ${successful === 1 ? 'recipe' : 'recipes'} removed from bookmarks`
+        );
+      } else {
+        Alert.alert(
+          "Partial Success", 
+          `${successful} out of ${selectedIds.length} recipes were removed. Please try again for the remaining items.`
+        );
+      }
+      
+      // Exit selection mode after batch delete
+      setSelectionMode(false);
+      setSelectedItems({});
+      
+    } catch (error) {
+      console.error('Error during batch delete:', error);
+      Alert.alert("Error", "Failed to remove selected bookmarks");
+    } finally {
+      setBatchDeleting(false);
+    }
+  };
+
+  const confirmBatchDelete = () => {
+    const count = getSelectedCount();
+    
+    if (count === 0) {
+      Alert.alert("Select Recipes", "Please select at least one recipe to delete");
+      return;
+    }
+    
+    Alert.alert(
+      "Delete Selected Recipes", 
+      `Are you sure you want to remove ${count} selected ${count === 1 ? 'recipe' : 'recipes'} from bookmarks?`, 
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: deleteSelectedBookmarks }
+      ]
+    );
+  };
   
   // Navigate to recipe detail
   const openRecipeDetail = (recipe) => {
+    if (selectionMode) {
+      toggleItemSelection(recipe._id);
+      return;
+    }
+    
     // Format the nutrition data for URL params
     const nutritionParam = recipe.nutrition 
       ? JSON.stringify(recipe.nutrition)
@@ -220,9 +337,18 @@ export default function Bookmark() {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity 
-      style={styles.bookmarkCard}
+      style={[
+        styles.bookmarkCard,
+        selectedItems[item._id] ? { borderColor: COLORS.primary, borderWidth: 2 } : {}
+      ]}
       activeOpacity={0.9}
       onPress={() => openRecipeDetail(item)}
+      onLongPress={() => {
+        if (!selectionMode) {
+          setSelectionMode(true);
+          toggleItemSelection(item._id);
+        }
+      }}
     >
       <LinearGradient
         colors={[COLORS.primary, 'rgba(0,0,0,0.4)']}
@@ -230,6 +356,27 @@ export default function Bookmark() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       />
+      
+      {selectionMode && (
+        <View style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 10,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          borderRadius: 15,
+          width: 30,
+          height: 30,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+          <Ionicons
+            name={selectedItems[item._id] ? "checkmark-circle" : "ellipse-outline"}
+            size={24}
+            color={selectedItems[item._id] ? COLORS.primary : "white"}
+          />
+        </View>
+      )}
       
       {item.image ? (
         <Image
@@ -247,17 +394,19 @@ export default function Bookmark() {
       <View style={styles.recipeDetails}>
         <View style={styles.titleRow}>
           <Text style={styles.recipeTitle}>{item.title}</Text>
-          <TouchableOpacity 
-            onPress={(e) => confirmRemove(item._id, e)}
-            style={styles.removeButton}
-            disabled={removeLoading[item._id]}
-          >
-            {removeLoading[item._id] ? (
-              <ActivityIndicator size="small" color="white" />
-            ) : (
-              <Ionicons name="trash-outline" size={20} color="white" />
-            )}
-          </TouchableOpacity>
+          {!selectionMode && (
+            <TouchableOpacity 
+              onPress={(e) => confirmRemove(item._id, e)}
+              style={styles.removeButton}
+              disabled={removeLoading[item._id]}
+            >
+              {removeLoading[item._id] ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="trash-outline" size={20} color="white" />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
         
         <View style={styles.ratingContainer}>
@@ -338,70 +487,154 @@ export default function Bookmark() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Saved Recipes</Text>
-        
-        {/* Search input */}
-        <View style={{
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          borderRadius: 12,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 12,
-          marginTop: 10,
-          marginBottom: 15,
-        }}>
-          <Ionicons name="search" size={20} color="rgba(255,255,255,0.5)" />
-          <TextInput
-            style={{
-              flex: 1,
-              height: 44,
-              color: 'white',
-              marginLeft: 8,
-              fontSize: 16,
-            }}
-            placeholder="Search saved recipes..."
-            placeholderTextColor="rgba(255,255,255,0.5)"
-            value={searchQuery}
-            onChangeText={handleSearch}
-          />
-          {searchQuery ? (
-            <TouchableOpacity onPress={() => handleSearch('')}>
-              <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.5)" />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.headerTitle}>Saved Recipes</Text>
+          
+          {bookmarks.length > 0 && !selectionMode && (
+            <TouchableOpacity 
+              onPress={toggleSelectionMode}
+              style={{
+                padding: 8,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 20,
+              }}
+            >
+              <Ionicons name="checkmark-circle-outline" size={24} color="white" />
             </TouchableOpacity>
-          ) : null}
+          )}
+          
+          {selectionMode && (
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity 
+                onPress={getSelectedCount() > 0 ? confirmBatchDelete : null}
+                style={{
+                  padding: 8,
+                  backgroundColor: getSelectedCount() > 0 ? 'rgba(255,59,48,0.2)' : 'rgba(255,255,255,0.1)',
+                  borderRadius: 20,
+                  marginRight: 10,
+                }}
+                disabled={batchDeleting || getSelectedCount() === 0}
+              >
+                {batchDeleting ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Ionicons name="trash-outline" size={24} color={getSelectedCount() > 0 ? '#FF3B30' : 'rgba(255,255,255,0.5)'} />
+                )}
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={toggleSelectionMode}
+                style={{
+                  padding: 8,
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 20,
+                }}
+                disabled={batchDeleting}
+              >
+                <Ionicons name="close-outline" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
         
-        {/* Filter chips */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 10 }}
-        >
-          <FilterButton 
-            title="All Recipes" 
-            active={activeFilter === FILTERS.ALL}
-            onPress={() => handleFilterChange(FILTERS.ALL)}
-            iconName="grid-outline"
-          />
-          <FilterButton 
-            title="High Protein" 
-            active={activeFilter === FILTERS.HIGH_PROTEIN}
-            onPress={() => handleFilterChange(FILTERS.HIGH_PROTEIN)}
-            iconName="barbell-outline"
-          />
-          <FilterButton 
-            title="Low Calorie" 
-            active={activeFilter === FILTERS.LOW_CALORIE}
-            onPress={() => handleFilterChange(FILTERS.LOW_CALORIE)}
-            iconName="leaf-outline"
-          />
-          <FilterButton 
-            title="Highly Rated" 
-            active={activeFilter === FILTERS.HIGH_RATED}
-            onPress={() => handleFilterChange(FILTERS.HIGH_RATED)}
-            iconName="star-outline"
-          />
-        </ScrollView>
+        {selectionMode && (
+          <View style={{ 
+            flexDirection: 'row', 
+            justifyContent: 'space-between', 
+            marginTop: 10,
+            marginBottom: 15,
+          }}>
+            <Text style={{ color: 'white', fontSize: 16 }}>
+              {getSelectedCount()} of {bookmarks.length} selected
+            </Text>
+            
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity 
+                onPress={selectAll}
+                style={{ marginRight: 15 }}
+                disabled={batchDeleting}
+              >
+                <Text style={{ color: COLORS.primary, fontSize: 16 }}>Select All</Text>
+              </TouchableOpacity>
+              
+              {getSelectedCount() > 0 && (
+                <TouchableOpacity 
+                  onPress={deselectAll}
+                  disabled={batchDeleting}
+                >
+                  <Text style={{ color: COLORS.primary, fontSize: 16 }}>Deselect All</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+        
+        {!selectionMode && (
+          <>
+            {/* Search input */}
+            <View style={{
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              borderRadius: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 12,
+              marginTop: 10,
+              marginBottom: 15,
+            }}>
+              <Ionicons name="search" size={20} color="rgba(255,255,255,0.5)" />
+              <TextInput
+                style={{
+                  flex: 1,
+                  height: 44,
+                  color: 'white',
+                  marginLeft: 8,
+                  fontSize: 16,
+                }}
+                placeholder="Search saved recipes..."
+                placeholderTextColor="rgba(255,255,255,0.5)"
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+              {searchQuery ? (
+                <TouchableOpacity onPress={() => handleSearch('')}>
+                  <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.5)" />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+            
+            {/* Filter chips */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              <FilterButton 
+                title="All Recipes" 
+                active={activeFilter === FILTERS.ALL}
+                onPress={() => handleFilterChange(FILTERS.ALL)}
+                iconName="grid-outline"
+              />
+              <FilterButton 
+                title="High Protein" 
+                active={activeFilter === FILTERS.HIGH_PROTEIN}
+                onPress={() => handleFilterChange(FILTERS.HIGH_PROTEIN)}
+                iconName="barbell-outline"
+              />
+              <FilterButton 
+                title="Low Calorie" 
+                active={activeFilter === FILTERS.LOW_CALORIE}
+                onPress={() => handleFilterChange(FILTERS.LOW_CALORIE)}
+                iconName="leaf-outline"
+              />
+              <FilterButton 
+                title="Highly Rated" 
+                active={activeFilter === FILTERS.HIGH_RATED}
+                onPress={() => handleFilterChange(FILTERS.HIGH_RATED)}
+                iconName="star-outline"
+              />
+            </ScrollView>
+          </>
+        )}
       </View>
 
       <FlatList
@@ -416,20 +649,23 @@ export default function Bookmark() {
             onRefresh={handleRefresh}
             colors={[COLORS.primary]}
             tintColor="white"
+            enabled={!selectionMode}
           />
         }
         ListHeaderComponent={
-          <View style={styles.listHeader}>
-            <Text style={styles.bookmarkCount}>
-              {bookmarks.length} {bookmarks.length === 1 ? 'recipe' : 'recipes'} 
-              {activeFilter !== FILTERS.ALL && (
-                activeFilter === FILTERS.HIGH_PROTEIN ? ' (High Protein)' :
-                activeFilter === FILTERS.LOW_CALORIE ? ' (Low Calorie)' :
-                activeFilter === FILTERS.HIGH_RATED ? ' (Highly Rated)' : ''
-              )}
-              {searchQuery ? ` matching "${searchQuery}"` : ''}
-            </Text>
-          </View>
+          !selectionMode && (
+            <View style={styles.listHeader}>
+              <Text style={styles.bookmarkCount}>
+                {bookmarks.length} {bookmarks.length === 1 ? 'recipe' : 'recipes'} 
+                {activeFilter !== FILTERS.ALL && (
+                  activeFilter === FILTERS.HIGH_PROTEIN ? ' (High Protein)' :
+                  activeFilter === FILTERS.LOW_CALORIE ? ' (Low Calorie)' :
+                  activeFilter === FILTERS.HIGH_RATED ? ' (Highly Rated)' : ''
+                )}
+                {searchQuery ? ` matching "${searchQuery}"` : ''}
+              </Text>
+            </View>
+          )
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -440,20 +676,22 @@ export default function Bookmark() {
             />
             <Text style={styles.emptyText}>
               {error ? "Something went wrong" : 
-               bookmarks.length === 0 && allBookmarks.length > 0 ? "No matching recipes" :
-               "No bookmarked recipes"}
+              bookmarks.length === 0 && allBookmarks.length > 0 ? "No matching recipes" :
+              "No bookmarked recipes"}
             </Text>
             <Text style={styles.emptySubtext}>
               {error ? "Pull down to refresh or try again later" : 
-               bookmarks.length === 0 && allBookmarks.length > 0 ? "Try different search or filter options" :
-               "Bookmark your favorite recipes to see them here!"}
+              bookmarks.length === 0 && allBookmarks.length > 0 ? "Try different search or filter options" :
+              "Bookmark your favorite recipes to see them here!"}
             </Text>
-            <TouchableOpacity
-              style={styles.browseButton}
-              onPress={() => router.push("/")}
-            >
-              <Text style={styles.browseButtonText}>Browse Recipes</Text>
-            </TouchableOpacity>
+            {!selectionMode && (
+              <TouchableOpacity
+                style={styles.browseButton}
+                onPress={() => router.push("/")}
+              >
+                <Text style={styles.browseButtonText}>Browse Recipes</Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
