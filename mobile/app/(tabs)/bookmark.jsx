@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   StatusBar
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Image } from "expo-image";
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -24,32 +24,40 @@ import styles from "../../assets/styles/bookmark.styles";
 // For simulating delay like in your other components
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const PAGE_SIZE = 10;
+
 export default function Bookmark() {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [removeLoading, setRemoveLoading] = useState({});
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const router = useRouter();
   const { token } = useAuthStore();
 
   // Load bookmarks when screen comes into focus
   useFocusEffect(
-    React.useCallback(() => {
-      fetchBookmarks();
+    useCallback(() => {
+      fetchBookmarks(1, true);
       return () => {};
     }, [])
   );
 
-  const fetchBookmarks = async () => {
-    setError(null);
+  const fetchBookmarks = async (pageNum = 1, reset = false) => {
+    if (pageNum === 1) setError(null);
+    
     try {
-      setLoading(true);
+      if (pageNum === 1) setLoading(true);
+      if (pageNum > 1) setLoadingMore(true);
+      
       if (!token) {
         throw new Error("Authentication required");
       }
       
-      const response = await fetch(`${API_URI}/bookmarks`, {
+      const response = await fetch(`${API_URI}/bookmarks?page=${pageNum}&limit=${PAGE_SIZE}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -63,21 +71,41 @@ export default function Bookmark() {
       }
       
       const data = await response.json();
-      setBookmarks(Array.isArray(data) ? data : []);
+      const newBookmarks = Array.isArray(data) ? data : [];
+      
+      // Check if we've reached the end
+      setHasMore(newBookmarks.length === PAGE_SIZE);
+      
+      // Update bookmarks state
+      if (reset || pageNum === 1) {
+        setBookmarks(newBookmarks);
+        setPage(1);
+      } else {
+        setBookmarks(prev => [...prev, ...newBookmarks]);
+      }
+      
+      setPage(pageNum);
     } catch (error) {
       console.error('Error loading bookmarks:', error);
       setError(error.message);
-      Alert.alert("Error", error.message);
+      if (pageNum === 1) Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     await sleep(800);
-    await fetchBookmarks();
+    await fetchBookmarks(1, true);
     setRefreshing(false);
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchBookmarks(page + 1);
+    }
   };
 
   const removeBookmark = async (recipeId) => {
@@ -229,6 +257,16 @@ export default function Bookmark() {
     </TouchableOpacity>
   );
 
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    
+    return (
+      <View style={{ paddingVertical: 20 }}>
+        <ActivityIndicator size="small" color={COLORS.primary} />
+      </View>
+    );
+  };
+
   if (loading && !refreshing) {
     return <Loader />;
   }
@@ -263,6 +301,9 @@ export default function Bookmark() {
             tintColor="white"
           />
         }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
         ListHeaderComponent={
           <View style={styles.listHeader}>
             <Text style={styles.bookmarkCount}>
