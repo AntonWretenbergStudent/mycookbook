@@ -29,8 +29,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 // Filter categories
 const FILTERS = {
   ALL: 'all',
-  HIGH_PROTEIN: 'high_protein',
-  LOW_CALORIE: 'low_calorie',
   HIGH_RATED: 'high_rated'
 };
 
@@ -122,16 +120,6 @@ export default function Bookmark() {
     // Apply category filter
     if (filter !== FILTERS.ALL) {
       switch (filter) {
-        case FILTERS.HIGH_PROTEIN:
-          result = result.filter(item => 
-            item.nutrition && item.nutrition.protein > 15
-          );
-          break;
-        case FILTERS.LOW_CALORIE:
-          result = result.filter(item => 
-            item.nutrition && item.nutrition.calories < 400
-          );
-          break;
         case FILTERS.HIGH_RATED:
           result = result.filter(item => item.rating >= 4);
           break;
@@ -499,7 +487,7 @@ export default function Bookmark() {
                 borderRadius: 20,
               }}
             >
-              <Ionicons name="checkmark-circle-outline" size={24} color="white" />
+              <Ionicons name="trash-outline" size={24} color="white" />
             </TouchableOpacity>
           )}
           
@@ -615,18 +603,6 @@ export default function Bookmark() {
                 iconName="grid-outline"
               />
               <FilterButton 
-                title="High Protein" 
-                active={activeFilter === FILTERS.HIGH_PROTEIN}
-                onPress={() => handleFilterChange(FILTERS.HIGH_PROTEIN)}
-                iconName="barbell-outline"
-              />
-              <FilterButton 
-                title="Low Calorie" 
-                active={activeFilter === FILTERS.LOW_CALORIE}
-                onPress={() => handleFilterChange(FILTERS.LOW_CALORIE)}
-                iconName="leaf-outline"
-              />
-              <FilterButton 
                 title="Highly Rated" 
                 active={activeFilter === FILTERS.HIGH_RATED}
                 onPress={() => handleFilterChange(FILTERS.HIGH_RATED)}
@@ -658,8 +634,6 @@ export default function Bookmark() {
               <Text style={styles.bookmarkCount}>
                 {bookmarks.length} {bookmarks.length === 1 ? 'recipe' : 'recipes'} 
                 {activeFilter !== FILTERS.ALL && (
-                  activeFilter === FILTERS.HIGH_PROTEIN ? ' (High Protein)' :
-                  activeFilter === FILTERS.LOW_CALORIE ? ' (Low Calorie)' :
                   activeFilter === FILTERS.HIGH_RATED ? ' (Highly Rated)' : ''
                 )}
                 {searchQuery ? ` matching "${searchQuery}"` : ''}

@@ -15,7 +15,6 @@ export default function LogoutButton() {
   }
   return (
    <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
-    <Ionicons name="log-out-outline" size={20} color={COLORS.white}/>
     <Text style={styles.logoutText}>Logout</Text>
    </TouchableOpacity>
   )
