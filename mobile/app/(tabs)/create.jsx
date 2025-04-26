@@ -11,6 +11,7 @@ import {
   Image,
   ActivityIndicator,
   StatusBar,
+  FlatList,
 } from "react-native"
 import { useRouter } from "expo-router"
 import { Ionicons } from "@expo/vector-icons"
@@ -29,6 +30,13 @@ export default function Create() {
   const [image, setImage] = useState(null)
   const [imageBase64, setImageBase64] = useState(null)
   const [loading, setLoading] = useState(false)
+  
+  // New state for ingredients
+  const [ingredients, setIngredients] = useState([])
+  const [currentIngredient, setCurrentIngredient] = useState("")
+  const [currentQuantity, setCurrentQuantity] = useState("")
+  const [currentUnit, setCurrentUnit] = useState("")
+  const [showIngredientsSection, setShowIngredientsSection] = useState(false)
 
   const router = useRouter()
   const { token } = useAuthStore()
@@ -79,9 +87,53 @@ export default function Create() {
     }
   }
 
+  const handleAddIngredient = () => {
+    if (!currentIngredient.trim()) {
+      Alert.alert("Error", "Please enter an ingredient name")
+      return
+    }
+
+    const newIngredient = {
+      id: Date.now().toString(), // Simple unique ID
+      name: currentIngredient.trim(),
+      quantity: currentQuantity.trim() || "to taste",
+      unit: currentUnit.trim() || ""
+    }
+
+    setIngredients([...ingredients, newIngredient])
+    setCurrentIngredient("")
+    setCurrentQuantity("")
+    setCurrentUnit("")
+  }
+
+  const handleRemoveIngredient = (id) => {
+    setIngredients(ingredients.filter(ingredient => ingredient.id !== id))
+  }
+
+  const handleToggleIngredients = () => {
+    setShowIngredientsSection(!showIngredientsSection)
+  }
+
+  const renderIngredientItem = ({ item }) => (
+    <View style={styles.ingredientItem}>
+      <View style={styles.ingredientInfo}>
+        <Text style={styles.ingredientName}>{item.name}</Text>
+        <Text style={styles.ingredientQuantity}>
+          {item.quantity} {item.unit}
+        </Text>
+      </View>
+      <TouchableOpacity
+        style={styles.removeIngredientButton}
+        onPress={() => handleRemoveIngredient(item.id)}
+      >
+        <Ionicons name="close-circle" size={22} color="rgba(255,255,255,0.7)" />
+      </TouchableOpacity>
+    </View>
+  )
+
   const handleSubmit = async () => {
     if (!title || !caption || !imageBase64 || !rating) {
-      Alert.alert("Error", "Please fill in all fields")
+      Alert.alert("Error", "Please fill in all required fields")
       return
     }
 
@@ -107,6 +159,7 @@ export default function Create() {
           caption,
           rating: rating.toString(),
           image: imageDataUrl,
+          ingredients: ingredients.length > 0 ? ingredients : undefined
         }),
       })
 
@@ -122,6 +175,7 @@ export default function Create() {
       setRating(3)
       setImage(null)
       setImageBase64(null)
+      setIngredients([])
 
       router.push("/")
     } catch (error) {
@@ -181,7 +235,7 @@ export default function Create() {
             <View style={styles.form}>
               {/* RECIPE TITLE */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Recipe Title</Text>
+                <Text style={styles.label}>Recipe Title*</Text>
                 <View style={styles.inputContainer}>
                   <Ionicons
                     name="receipt-outline"
@@ -201,13 +255,13 @@ export default function Create() {
 
               {/* RATING */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Your Rating</Text>
+                <Text style={styles.label}>Your Rating*</Text>
                 {renderRatingPicker()}
               </View>
 
               {/* IMAGE */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Recipe Image</Text>
+                <Text style={styles.label}>Recipe Image*</Text>
                 <TouchableOpacity
                   style={styles.imagePicker}
                   onPress={pickImage}
@@ -232,9 +286,94 @@ export default function Create() {
                 </TouchableOpacity>
               </View>
 
+              {/* INGREDIENTS SECTION */}
+              <View style={styles.formGroup}>
+                <TouchableOpacity 
+                  style={styles.sectionToggle}
+                  onPress={handleToggleIngredients}
+                >
+                  <Text style={styles.sectionToggleText}>
+                    {showIngredientsSection ? "Hide Ingredients" : "Add Ingredients"}
+                  </Text>
+                  <Ionicons 
+                    name={showIngredientsSection ? "chevron-up" : "chevron-down"} 
+                    size={24} 
+                    color="rgba(255,255,255,0.7)" 
+                  />
+                </TouchableOpacity>
+
+                {showIngredientsSection && (
+                  <View style={styles.ingredientsContainer}>
+                    <Text style={styles.ingredientsTitle}>Ingredients</Text>
+                    
+                    {/* Current ingredients list */}
+                    {ingredients.length > 0 ? (
+                      <FlatList
+                        data={ingredients}
+                        renderItem={renderIngredientItem}
+                        keyExtractor={(item) => item.id}
+                        style={styles.ingredientsList}
+                        scrollEnabled={false}
+                      />
+                    ) : (
+                      <Text style={styles.noIngredientsText}>
+                        No ingredients added yet
+                      </Text>
+                    )}
+                    
+                    {/* Ingredient input fields */}
+                    <View style={styles.ingredientInputRow}>
+                      <View style={styles.quantityContainer}>
+                        <TextInput
+                          style={styles.quantityInput}
+                          placeholder="Qty"
+                          placeholderTextColor="rgba(255,255,255,0.4)"
+                          value={currentQuantity}
+                          onChangeText={setCurrentQuantity}
+                          keyboardType="numeric"
+                        />
+                      </View>
+                      
+                      <View style={styles.unitContainer}>
+                        <TextInput
+                          style={styles.unitInput}
+                          placeholder="Unit"
+                          placeholderTextColor="rgba(255,255,255,0.4)"
+                          value={currentUnit}
+                          onChangeText={setCurrentUnit}
+                        />
+                      </View>
+                      
+                      <View style={styles.ingredientNameContainer}>
+                        <TextInput
+                          style={styles.ingredientNameInput}
+                          placeholder="Ingredient name"
+                          placeholderTextColor="rgba(255,255,255,0.4)"
+                          value={currentIngredient}
+                          onChangeText={setCurrentIngredient}
+                        />
+                      </View>
+                    </View>
+                    
+                    <TouchableOpacity
+                      style={styles.addIngredientButton}
+                      onPress={handleAddIngredient}
+                    >
+                      <Ionicons
+                        name="add-circle-outline"
+                        size={20}
+                        color={COLORS.white}
+                        style={styles.addIngredientIcon}
+                      />
+                      <Text style={styles.addIngredientText}>Add Ingredient</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+
               {/* CAPTION */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Caption</Text>
+                <Text style={styles.label}>Caption*</Text>
                 <TextInput
                   style={styles.textArea}
                   placeholder="Describe the meal..."

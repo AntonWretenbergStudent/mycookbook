@@ -147,6 +147,126 @@ const styles = StyleSheet.create({
   buttonIcon: {
     marginRight: 8,
   },
+
+  // Section toggle
+  sectionToggle: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  sectionToggleText: {
+    color: 'white',
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  // Ingredients section
+  ingredientsContainer: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 10,
+  },
+  ingredientsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: 'white',
+    marginBottom: 12,
+  },
+  ingredientsList: {
+    marginBottom: 16,
+  },
+  noIngredientsText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontStyle: 'italic',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  
+  // Ingredient item
+  ingredientItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+  },
+  ingredientInfo: {
+    flex: 1,
+  },
+  ingredientName: {
+    color: 'white',
+    fontWeight: "500",
+    fontSize: 15,
+  },
+  ingredientQuantity: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
+  },
+  removeIngredientButton: {
+    padding: 4,
+  },
+  
+  // Ingredient input row
+  ingredientInputRow: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  quantityContainer: {
+    flex: 2,
+    marginRight: 8,
+  },
+  quantityInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 10,
+    color: 'white',
+    height: 44,
+  },
+  unitContainer: {
+    flex: 2,
+    marginRight: 8,
+  },
+  unitInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 10,
+    color: 'white',
+    height: 44,
+  },
+  ingredientNameContainer: {
+    flex: 4,
+  },
+  ingredientNameInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    padding: 10,
+    color: 'white',
+    height: 44,
+  },
+  
+  // Add ingredient button
+  addIngredientButton: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 8,
+    padding: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  addIngredientIcon: {
+    marginRight: 8,
+  },
+  addIngredientText: {
+    color: 'white',
+    fontWeight: "500",
+  },
 });
 
 export default styles;
