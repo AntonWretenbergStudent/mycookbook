@@ -38,20 +38,34 @@ router.get("/", protectRoute, async (req, res) => {
     const page = req.query.page || 1;
     const limit = req.query.limit || 5;
     const skip = (page - 1) * limit;
+    const search = req.query.search || '';
 
-    const recipes = await Recipe.find()
+    // Build query based on search parameter
+    let query = {};
+    
+    if (search) {
+      // Create a text search query to find recipes by title or caption
+      query = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },  // Case-insensitive search in title
+          { caption: { $regex: search, $options: 'i' } } // Case-insensitive search in caption
+        ]
+      };
+    }
+
+    const recipes = await Recipe.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate("user", "username profileImage");
 
-    const totalRecipe = await Recipe.countDocuments();
+    const totalRecipes = await Recipe.countDocuments(query);
 
     res.send({
       recipes,
-      currentPage: page,
-      totalRecipe,
-      totalRecipe: Math.ceil(totalRecipe / limit),
+      currentPage: parseInt(page),
+      totalRecipes,
+      totalPages: Math.ceil(totalRecipes / limit),
     });
   } catch (error) {
     console.log("Error in get all recipe route", error);

@@ -59,6 +59,27 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   
+  // Search bar styles
+  searchBarContainer: {
+    paddingHorizontal: 20,
+    overflow: 'hidden',
+  },
+  searchInputContainer: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    color: 'white',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  
   // List container
   listContainer: {
     paddingHorizontal: 16,

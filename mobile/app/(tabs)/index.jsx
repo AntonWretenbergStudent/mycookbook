@@ -7,10 +7,12 @@ import {
   RefreshControl,
   StatusBar,
   Alert,
+  TextInput,
+  Animated,
 } from "react-native"
 import { useAuthStore } from "../../store/authStore"
 import { Image } from "expo-image"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useFocusEffect } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from "@expo/vector-icons"
@@ -34,6 +36,15 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true)
   const [bookmarkedRecipes, setBookmarkedRecipes] = useState([])
   const [bookmarkLoading, setBookmarkLoading] = useState({})
+  
+  // Search functionality
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
+  const searchInputRef = useRef(null)
+  const searchBarHeight = useRef(new Animated.Value(0)).current
+  const searchBarOpacity = useRef(new Animated.Value(0)).current
 
   // Load bookmarks from server when the screen comes into focus
   useFocusEffect(
@@ -129,13 +140,19 @@ export default function Home() {
     }
   }
 
-  const fetchRecipes = async (pageNum = 1, refresh = false) => {
+  const fetchRecipes = async (pageNum = 1, refresh = false, search = "") => {
     try {
       if (refresh) setRefreshing(true)
       else if (pageNum === 1) setLoading(true)
+      
+      // Build the API URL with search parameter if provided
+      let url = `${API_URI}/recipes?page=${pageNum}&limit=5`
+      if (search) {
+        url += `&search=${encodeURIComponent(search)}`
+      }
 
       const response = await fetch(
-        `${API_URI}/recipes?page=${pageNum}&limit=5`,
+        url,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -144,6 +161,12 @@ export default function Home() {
       const data = await response.json()
       if (!response.ok)
         throw new Error(data.message || "Failed to fetch recipes")
+      
+      // If this is a search, update searchResults state
+      if (search) {
+        setSearchResults(data.recipes)
+        return
+      }
 
       const uniqueRecipes =
         refresh || pageNum === 1
@@ -164,7 +187,11 @@ export default function Home() {
       if (refresh) {
         await sleep(800)
         setRefreshing(false)
-      } else setLoading(false)
+      } else {
+        setLoading(false)
+      }
+      
+      setIsSearching(false)
     }
   }
 
@@ -173,9 +200,70 @@ export default function Home() {
   }, [])
 
   const handleLoadMore = async () => {
-    if (hasMore && !loading && !refreshing) {
+    if (hasMore && !loading && !refreshing && !showSearch) {
       await fetchRecipes(page + 1)
     }
+  }
+
+  // Toggle search bar visibility
+  const toggleSearch = () => {
+    if (showSearch) {
+      // Hide search bar
+      Animated.parallel([
+        Animated.timing(searchBarHeight, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+        Animated.timing(searchBarOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        setShowSearch(false)
+        setSearchQuery("")
+        setSearchResults([])
+      })
+    } else {
+      // Show search bar
+      setShowSearch(true)
+      Animated.parallel([
+        Animated.timing(searchBarHeight, {
+          toValue: 50,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+        Animated.timing(searchBarOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        // Focus the search input after animation
+        if (searchInputRef.current) {
+          searchInputRef.current.focus()
+        }
+      })
+    }
+  }
+
+  // Handle search
+  const handleSearch = async (text) => {
+    setSearchQuery(text)
+    
+    if (text.trim().length > 2) {
+      setIsSearching(true)
+      await fetchRecipes(1, false, text)
+    } else if (text.trim() === "") {
+      setSearchResults([])
+    }
+  }
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery("")
+    setSearchResults([])
   }
 
   const renderRatingStars = (rating) => {
@@ -253,13 +341,17 @@ export default function Home() {
   )
 
   const handleRefresh = async () => {
-    await Promise.all([
-      fetchRecipes(1, true),
-      fetchBookmarkedRecipes()
-    ])
+    if (showSearch && searchQuery) {
+      await fetchRecipes(1, true, searchQuery)
+    } else {
+      await Promise.all([
+        fetchRecipes(1, true),
+        fetchBookmarkedRecipes()
+      ])
+    }
   }
 
-  if (loading) return <Loader />
+  if (loading && !isSearching) return <Loader />
 
   return (
     <View style={styles.container}>
@@ -284,8 +376,18 @@ export default function Home() {
         </View>
         
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerButton}>
-            <Ionicons name="search-outline" size={22} color="white" />
+          <TouchableOpacity 
+            style={[
+              styles.headerButton,
+              showSearch && { backgroundColor: COLORS.primary }
+            ]}
+            onPress={toggleSearch}
+          >
+            <Ionicons 
+              name={showSearch ? "close" : "search-outline"} 
+              size={22} 
+              color="white" 
+            />
           </TouchableOpacity>
           <TouchableOpacity style={styles.headerButton}>
             <Ionicons name="notifications-outline" size={22} color="white" />
@@ -293,8 +395,40 @@ export default function Home() {
         </View>
       </View>
       
+      {/* Search bar - Animated */}
+      <Animated.View 
+        style={[
+          styles.searchBarContainer,
+          {
+            height: searchBarHeight,
+            opacity: searchBarOpacity,
+            marginBottom: searchBarHeight.interpolate({
+              inputRange: [0, 50],
+              outputRange: [0, 10]
+            })
+          }
+        ]}
+      >
+        <View style={styles.searchInputContainer}>
+          <Ionicons name="search" size={20} color="rgba(255,255,255,0.5)" />
+          <TextInput
+            ref={searchInputRef}
+            style={styles.searchInput}
+            placeholder="Search recipes..."
+            placeholderTextColor="rgba(255,255,255,0.5)"
+            value={searchQuery}
+            onChangeText={handleSearch}
+          />
+          {searchQuery ? (
+            <TouchableOpacity onPress={clearSearch}>
+              <Ionicons name="close-circle" size={20} color="rgba(255,255,255,0.5)" />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </Animated.View>
+      
       <FlatList
-        data={recipes}
+        data={searchResults.length > 0 ? searchResults : recipes}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContainer}
@@ -310,7 +444,7 @@ export default function Home() {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
         ListFooterComponent={
-          hasMore && recipes.length > 0 ? (
+          hasMore && recipes.length > 0 && !showSearch ? (
             <ActivityIndicator
               style={styles.footerLoader}
               size="small"
@@ -320,16 +454,28 @@ export default function Home() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Ionicons 
-              name="close" 
-              size={60} 
-              color="rgba(255,255,255,0.3)" 
-              style={styles.crossIcon}
-            />
-            <Text style={styles.emptyText}>No recommendations yet</Text>
-            <Text style={styles.emptySubtext}>
-              Be the first to share your recipe!
-            </Text>
+            {isSearching ? (
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            ) : (
+              <>
+                <Ionicons 
+                  name={searchQuery ? "search" : "close"} 
+                  size={60} 
+                  color="rgba(255,255,255,0.3)" 
+                  style={searchQuery ? {} : styles.crossIcon}
+                />
+                <Text style={styles.emptyText}>
+                  {searchQuery 
+                    ? "No recipes match your search" 
+                    : "No recommendations yet"}
+                </Text>
+                <Text style={styles.emptySubtext}>
+                  {searchQuery 
+                    ? "Try different search terms or check spelling" 
+                    : "Be the first to share your recipe!"}
+                </Text>
+              </>
+            )}
           </View>
         }
       />
