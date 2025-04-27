@@ -4,10 +4,10 @@ import Recipe from "../models/Recipe.js";
 import protectRoute from "../middleware/auth.middleware.js";
 
 const router = express.Router();
-
 router.post("/", protectRoute, async (req, res) => {
   try {
-    const { title, caption, rating, image } = req.body;
+    const { title, caption, rating, image, ingredients } = req.body;
+    // Now we're extracting ingredients
 
     if (!image || !title || !caption || !rating) {
       return res.status(400).json({ message: "Please provide an image" });
@@ -21,6 +21,7 @@ router.post("/", protectRoute, async (req, res) => {
       caption,
       rating,
       image: imageUrl,
+      ingredients, // Include ingredients here
       user: req.user._id,
     });
 

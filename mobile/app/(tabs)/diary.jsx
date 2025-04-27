@@ -60,17 +60,17 @@ export default function DiaryScreen() {
     }, [selectedDate])
   );
 
-  // Modify the useEffect for date changes to update current week
-  useEffect(() => {
-    // Generate the week dates for the selected date
-    updateCurrentWeek();
-  }, [selectedDate]);
-
   // Function to update the current week dates
   const updateCurrentWeek = () => {
     const weekDays = generateWeekDays(selectedDate);
     setCurrentWeekDates(weekDays);
   };
+
+  // Modify the useEffect for date changes to update current week
+  useEffect(() => {
+    // Generate the week dates for the selected date
+    updateCurrentWeek();
+  }, [selectedDate]);
 
   // Format date for API request
   const formatDateForAPI = (date) => {
@@ -172,7 +172,39 @@ export default function DiaryScreen() {
     }
   };
 
-  // Pan responder for expandable calendar
+  // Calendar expansion functions and PanResponder
+  const expandCalendar = () => {
+    // Generate the month dates before expanding
+    updateCurrentWeek();
+    
+    Animated.spring(calendarHeight, {
+      toValue: calendarMaxHeight,
+      friction: 7,
+      tension: 40,
+      useNativeDriver: false
+    }).start();
+    
+    setExpandedCalendar(true);
+  };
+
+  const collapseCalendar = () => {
+    console.log("Collapsing calendar, selected date:", selectedDate);
+    
+    Animated.spring(calendarHeight, {
+      toValue: calendarMinHeight,
+      friction: 7,
+      tension: 40,
+      useNativeDriver: false
+    }).start();
+    
+    // Generate the week that contains selectedDate
+    const weekDays = generateWeekDays(selectedDate);
+    console.log("Generated week days:", weekDays.map(d => d.getDate()));
+    
+    setCurrentWeekDates(weekDays);
+    setExpandedCalendar(false);
+  };
+  // Modify the panResponder to better handle the collapse state
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -188,25 +220,10 @@ export default function DiaryScreen() {
       onPanResponderRelease: (_, gesture) => {
         if (gesture.dy > 50 && !expandedCalendar) {
           // Dragged down enough to expand
-          // Make sure currentWeekDates is up to date before expanding
-          updateCurrentWeek();
-          Animated.spring(calendarHeight, {
-            toValue: calendarMaxHeight,
-            friction: 7,
-            tension: 40,
-            useNativeDriver: false
-          }).start();
-          setExpandedCalendar(true);
+          expandCalendar();
         } else if (gesture.dy < -50 && expandedCalendar) {
-          // Dragged up enough to collapse - update current week before collapsing
-          updateCurrentWeek(); // Ensure current week dates are updated
-          Animated.spring(calendarHeight, {
-            toValue: calendarMinHeight,
-            friction: 7,
-            tension: 40,
-            useNativeDriver: false
-          }).start();
-          setExpandedCalendar(false);
+          // Dragged up enough to collapse
+          collapseCalendar();
         } else if (expandedCalendar) {
           // Not dragged enough, return to expanded
           Animated.spring(calendarHeight, {
@@ -227,6 +244,30 @@ export default function DiaryScreen() {
       }
     })
   ).current;
+
+  // Modify the useEffect to call the new functions
+  useEffect(() => {
+    // When selectedDate changes, update the current week
+    // This is critical for ensuring the week view stays correct
+    if (!expandedCalendar) {
+      // Only update the current week if we're in collapsed mode
+      // This prevents the week from changing unexpectedly during month view
+      updateCurrentWeek();
+    }
+  }, [selectedDate]);
+
+  // Add a new effect to ensure calendar state stays consistent
+  useEffect(() => {
+    if (expandedCalendar) {
+      // If we're in expanded mode, ensure calendar height is at max
+      calendarHeight.setValue(calendarMaxHeight);
+    } else {
+      // If we're in collapsed mode, ensure calendar height is at min
+      calendarHeight.setValue(calendarMinHeight);
+      // Always update current week when collapsing
+      updateCurrentWeek();
+    }
+  }, [expandedCalendar]);
 
   // Helper to toggle water glass status
   const toggleWaterGlass = (count) => {
@@ -260,30 +301,32 @@ export default function DiaryScreen() {
   };
 
   // Modified to accept a date parameter and always return the week containing that date
-  const generateWeekDays = (date) => {
-    const currentDate = new Date(date);
-    
-    // Get the day of the week (0 is Sunday, 1 is Monday, etc.)
-    const day = currentDate.getDay();
-    
-    // Calculate the Monday date (adjusting for Sunday as day 0)
-    const diff = currentDate.getDate() - day + (day === 0 ? -6 : 1);
-    
-    // Create a new date object for Monday of the current week
-    const monday = new Date(currentDate);
-    monday.setDate(diff);
-    
-    const weekDays = [];
-    
-    // Generate dates for the whole week
-    for (let i = 0; i < 7; i++) {
-      const weekDate = new Date(monday);
-      weekDate.setDate(monday.getDate() + i);
-      weekDays.push(weekDate);
-    }
-    
-    return weekDays;
-  };
+// Modified to accept a date parameter and always return the week containing that date
+const generateWeekDays = (date) => {
+  const currentDate = new Date(date);
+  
+  // Get day of week (0 is Sunday, 1 is Monday, etc.)
+  const day = currentDate.getDay();
+  
+  // Calculate the start date of the week (Monday)
+  // For Sunday (0), go back 6 days to previous Monday
+  // For other days, go back (day - 1) days
+  const mondayOffset = day === 0 ? -6 : -(day - 1);
+  
+  // Create a date object for Monday of the current week
+  const monday = new Date(currentDate);
+  monday.setDate(currentDate.getDate() + mondayOffset);
+  
+  // Generate all days of the week
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const weekDate = new Date(monday);
+    weekDate.setDate(monday.getDate() + i);
+    weekDays.push(weekDate);
+  }
+  
+  return weekDays;
+};
 
   // Render days of the week header
   const renderDaysHeader = () => {

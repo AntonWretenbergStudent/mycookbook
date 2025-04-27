@@ -153,6 +153,39 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
   },
   
+  // Ingredients section
+  ingredientsContainer: {
+    marginBottom: 25,
+  },
+  ingredientsList: {
+    marginTop: 5,
+  },
+  ingredientItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    paddingLeft: 5,
+  },
+  ingredientBullet: {
+    marginTop: 6,
+    marginRight: 10,
+  },
+  ingredientText: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    flex: 1,
+    lineHeight: 22,
+  },
+  ingredientQuantity: {
+    fontWeight: '600',
+    color: 'white',
+  },
+  toTaste: {
+    fontStyle: 'italic',
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 14,
+  },
+  
   // Nutrition section
   nutritionContainer: {
     marginBottom: 20,
@@ -176,7 +209,7 @@ const styles = StyleSheet.create({
   nutritionLabel: {
     fontSize: 14,
     color: 'rgba(255,255,255,0.6)',
-  }
+  },
 });
 
 export default styles;

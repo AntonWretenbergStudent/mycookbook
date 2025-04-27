@@ -278,34 +278,39 @@ export default function Bookmark() {
     );
   };
   
-  // Navigate to recipe detail
-  const openRecipeDetail = (recipe) => {
-    if (selectionMode) {
-      toggleItemSelection(recipe._id);
-      return;
+// This is a partial snippet showing the updated openRecipeDetail function in bookmark.jsx
+
+const openRecipeDetail = (recipe) => {
+  if (selectionMode) {
+    toggleItemSelection(recipe._id);
+    return;
+  }
+  
+  const nutritionParam = recipe.nutrition 
+    ? JSON.stringify(recipe.nutrition)
+    : JSON.stringify({ calories: 0 });
+  
+  const ingredientsParam = recipe.ingredients && recipe.ingredients.length > 0
+    ? JSON.stringify(recipe.ingredients)
+    : JSON.stringify([]);
+  
+  router.push({
+    pathname: "/recipe-detail",
+    params: {
+      id: recipe._id,
+      title: recipe.title,
+      image: recipe.image,
+      caption: recipe.caption,
+      rating: recipe.rating.toString(),
+      username: recipe.username,
+      userImage: recipe.userImage,
+      createdAt: recipe.createdAt,
+      nutrition: nutritionParam,
+      ingredients: ingredientsParam,
+      isBookmarked: 'true'
     }
-    
-    // Format the nutrition data for URL params
-    const nutritionParam = recipe.nutrition 
-      ? JSON.stringify(recipe.nutrition)
-      : JSON.stringify({ calories: 0 });
-    
-    router.push({
-      pathname: "/recipe-detail",
-      params: {
-        id: recipe._id,
-        title: recipe.title,
-        image: recipe.image,
-        caption: recipe.caption,
-        rating: recipe.rating.toString(),
-        username: recipe.username,
-        userImage: recipe.userImage,
-        createdAt: recipe.createdAt,
-        nutrition: nutritionParam,
-        isBookmarked: 'true'
-      }
-    });
-  };
+  });
+};
 
   const renderRatingStars = (rating) => {
     const stars = [];

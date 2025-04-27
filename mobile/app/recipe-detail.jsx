@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
-  Alert
+  Alert,
+  FlatList
 } from 'react-native';
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,7 +37,8 @@ export default function RecipeDetailScreen() {
     username: params.username || 'User',
     userImage: params.userImage || null,
     createdAt: params.createdAt || new Date().toISOString(),
-    nutrition: params.nutrition ? JSON.parse(params.nutrition) : { calories: 0 }
+    nutrition: params.nutrition ? JSON.parse(params.nutrition) : { calories: 0 },
+    ingredients: params.ingredients ? JSON.parse(params.ingredients) : []
   };
   
   // Format date
@@ -101,6 +103,27 @@ export default function RecipeDetailScreen() {
     }
     return stars;
   };
+
+  // Render ingredient item
+  const renderIngredientItem = ({ item }) => (
+    <View style={styles.ingredientItem}>
+      <Ionicons 
+        name="ellipse" 
+        size={8} 
+        color="rgba(255,255,255,0.7)" 
+        style={styles.ingredientBullet} 
+      />
+      <Text style={styles.ingredientText}>
+        {item.quantity && item.quantity !== 'to taste' ? (
+          <Text style={styles.ingredientQuantity}>{item.quantity} {item.unit} </Text>
+        ) : null}
+        <Text>{item.name}</Text>
+        {(!item.quantity || item.quantity === 'to taste') ? (
+          <Text style={styles.toTaste}> (to taste)</Text>
+        ) : null}
+      </Text>
+    </View>
+  );
   
   return (
     <View style={styles.container}>
@@ -194,6 +217,20 @@ export default function RecipeDetailScreen() {
             <Text style={styles.sectionTitle}>Description</Text>
             <Text style={styles.descriptionText}>{recipe.caption}</Text>
           </View>
+          
+          {/* Ingredients section */}
+          {recipe.ingredients && recipe.ingredients.length > 0 && (
+            <View style={styles.ingredientsContainer}>
+              <Text style={styles.sectionTitle}>Ingredients</Text>
+              <FlatList
+                data={recipe.ingredients}
+                renderItem={renderIngredientItem}
+                keyExtractor={(item, index) => `ingredient-${index}`}
+                scrollEnabled={false}
+                style={styles.ingredientsList}
+              />
+            </View>
+          )}
           
           {/* Nutrition section - if available */}
           {recipe.nutrition && recipe.nutrition.calories > 0 && (

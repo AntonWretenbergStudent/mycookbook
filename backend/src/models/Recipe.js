@@ -1,5 +1,20 @@
 import mongoose from "mongoose"
 
+const ingredientSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  quantity: {
+    type: String,
+    default: "to taste"
+  },
+  unit: {
+    type: String,
+    default: ""
+  }
+}, { _id: false })
+
 const recipeSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -18,6 +33,10 @@ const recipeSchema = new mongoose.Schema({
     required: true, 
     min: 1,
     max: 5,
+  },
+  ingredients: {
+    type: [ingredientSchema],
+    default: []
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
