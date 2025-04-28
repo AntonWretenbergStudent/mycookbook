@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 const diaryEntrySchema = new mongoose.Schema({
   user: {
@@ -32,10 +32,10 @@ const diaryEntrySchema = new mongoose.Schema({
   }
 }, 
   {timestamps: true}
-);
+)
 
-diaryEntrySchema.index({ user: 1, date: 1 }, { unique: true });
+diaryEntrySchema.index({ user: 1, date: 1 }, { unique: true })
 
-const DiaryEntry = mongoose.model("DiaryEntry", diaryEntrySchema);
+const DiaryEntry = mongoose.model("DiaryEntry", diaryEntrySchema)
 
-export default DiaryEntry;
+export default DiaryEntry

@@ -15,8 +15,7 @@ const bookmarkSchema = new mongoose.Schema({
   {timestamps: true}
 )
 
-// Compound index to ensure a user can't bookmark the same recipe twice
-bookmarkSchema.index({ user: 1, recipe: 1 }, { unique: true });
+bookmarkSchema.index({ user: 1, recipe: 1 }, { unique: true })
 
 const Bookmark = mongoose.model("Bookmark", bookmarkSchema)
 

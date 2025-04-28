@@ -1,7 +1,7 @@
-import { StyleSheet, Dimensions } from "react-native";
-import COLORS from "../../constants/colors";
+import { StyleSheet, Dimensions } from "react-native"
+import COLORS from "../../constants/colors"
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window")
 
 const styles = StyleSheet.create({
   container: {
@@ -602,6 +602,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontSize: 16,
   },
-});
+})
 
-export default styles;
+export default styles

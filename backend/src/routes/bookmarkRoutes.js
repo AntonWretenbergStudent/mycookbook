@@ -1,9 +1,9 @@
-import express from "express";
-import Bookmark from "../models/Bookmark.js";
-import Recipe from "../models/Recipe.js";
-import protectRoute from "../middleware/auth.middleware.js";
+import express from "express"
+import Bookmark from "../models/Bookmark.js"
+import Recipe from "../models/Recipe.js"
+import protectRoute from "../middleware/auth.middleware.js"
 
-const router = express.Router();
+const router = express.Router()
 
 // Get all bookmarks for the current user
 router.get("/", protectRoute, async (req, res) => {
@@ -16,96 +16,95 @@ router.get("/", protectRoute, async (req, res) => {
           select: "username profileImage"
         }
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
 
     // Format the response to match the recipe structure
-    const formattedBookmarks = bookmarks.map(bookmark => bookmark.recipe);
+    const formattedBookmarks = bookmarks.map(bookmark => bookmark.recipe)
     
-    res.json(formattedBookmarks);
+    res.json(formattedBookmarks)
   } catch (error) {
-    console.log("Error getting bookmarks", error);
-    res.status(500).json({ message: "Server error" });
+    console.log("Error getting bookmarks", error)
+    res.status(500).json({ message: "Server error" })
   }
-});
+})
 
 // Add a bookmark
 router.post("/", protectRoute, async (req, res) => {
   try {
-    const { recipeId } = req.body;
+    const { recipeId } = req.body
 
     if (!recipeId) {
-      return res.status(400).json({ message: "Recipe ID is required" });
+      return res.status(400).json({ message: "Recipe ID is required" })
     }
 
     // Check if recipe exists
-    const recipe = await Recipe.findById(recipeId);
+    const recipe = await Recipe.findById(recipeId)
     if (!recipe) {
-      return res.status(404).json({ message: "Recipe not found" });
+      return res.status(404).json({ message: "Recipe not found" })
     }
 
     // Check if bookmark already exists
     const existingBookmark = await Bookmark.findOne({
       user: req.user._id,
       recipe: recipeId
-    });
+    })
 
     if (existingBookmark) {
-      return res.status(400).json({ message: "Recipe already bookmarked" });
+      return res.status(400).json({ message: "Recipe already bookmarked" })
     }
 
     // Create new bookmark
     const newBookmark = new Bookmark({
       user: req.user._id,
       recipe: recipeId
-    });
+    })
 
-    await newBookmark.save();
+    await newBookmark.save()
 
-    res.status(201).json({ message: "Recipe bookmarked successfully" });
+    res.status(201).json({ message: "Recipe bookmarked successfully" })
   } catch (error) {
-    console.log("Error adding bookmark", error);
-    res.status(500).json({ message: "Server error" });
+    console.log("Error adding bookmark", error)
+    res.status(500).json({ message: "Server error" })
   }
-});
+})
 
 // Remove a bookmark
 router.delete("/:recipeId", protectRoute, async (req, res) => {
   try {
-    const { recipeId } = req.params;
+    const { recipeId } = req.params
 
     const bookmark = await Bookmark.findOne({
       user: req.user._id,
       recipe: recipeId
-    });
+    })
 
     if (!bookmark) {
-      return res.status(404).json({ message: "Bookmark not found" });
+      return res.status(404).json({ message: "Bookmark not found" })
     }
 
-    await bookmark.deleteOne();
+    await bookmark.deleteOne()
 
-    res.json({ message: "Bookmark removed successfully" });
+    res.json({ message: "Bookmark removed successfully" })
   } catch (error) {
-    console.log("Error removing bookmark", error);
-    res.status(500).json({ message: "Server error" });
+    console.log("Error removing bookmark", error)
+    res.status(500).json({ message: "Server error" })
   }
-});
+})
 
-// Check if a recipe is bookmarked by the current user
 router.get("/check/:recipeId", protectRoute, async (req, res) => {
   try {
-    const { recipeId } = req.params;
+    const { recipeId } = req.params
 
     const bookmark = await Bookmark.findOne({
       user: req.user._id,
       recipe: recipeId
-    });
+    })
 
-    res.json({ isBookmarked: !!bookmark });
+    res.json({ isBookmarked: !!bookmark })
   } catch (error) {
-    console.log("Error checking bookmark", error);
-    res.status(500).json({ message: "Server error" });
+    console.log("Error checking bookmark", error)
+    res.status(500).json({ message: "Server error" })
   }
-});
+})
 
-export default router;
+export default router
