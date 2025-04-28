@@ -1,0 +1,607 @@
+import { StyleSheet, Dimensions } from "react-native";
+import COLORS from "../../constants/colors";
+
+const { width, height } = Dimensions.get("window");
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  scrollContentContainer: {
+    padding: 20,
+    paddingBottom: 50,
+  },
+
+  // Tab styles - Improved spacing and visual design
+  tabContainer: {
+    flexDirection: "row",
+    backgroundColor: "rgba(25,35,45,0.9)",
+    borderRadius: 16,
+    margin: 20,
+    marginBottom: 0,
+    padding: 5,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 10,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  activeTab: {
+    backgroundColor: COLORS.primary,
+    elevation: 3,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+  },
+  tabText: {
+    color: "rgba(255,255,255,0.7)",
+    fontWeight: "600",
+    marginLeft: 8,
+    fontSize: 15,
+  },
+  activeTabText: {
+    color: "white",
+    fontWeight: "700",
+  },
+
+  // Section styles - Improved typography
+  sectionTitle: {
+    fontSize: 22, // Larger font
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 12,
+    letterSpacing: 0.5, // Slight letter spacing for better readability
+  },
+  sectionSubtitle: {
+    fontSize: 15, // Slightly larger
+    color: "rgba(255,255,255,0.75)",
+    marginBottom: 22,
+    lineHeight: 22, // Better line height for readability
+  },
+
+  // Text input section - Improved layout and shadows
+  textInputSection: {
+    backgroundColor: "rgba(25,35,45,0.9)",
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    color: "white",
+    marginRight: 12,
+    fontSize: 16, // Larger font
+  },
+  addButton: {
+    backgroundColor: COLORS.primary,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+  },
+
+  // Ingredients list - Improved spacing and visual design
+  ingredientsList: {
+    marginBottom: 22,
+  },
+  ingredientsGrid: {
+    paddingBottom: 10,
+  },
+  ingredientItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 12,
+    padding: 12,
+    margin: 5,
+    flex: 1,
+    maxWidth: "47%",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  ingredientText: {
+    color: "white",
+    marginRight: 8,
+    flex: 1,
+    fontSize: 15, // Slightly larger
+  },
+  emptyIngredientsContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 35,
+    marginBottom: 22,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 16,
+  },
+  emptyIngredientsText: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 17,
+    marginTop: 14,
+    textAlign: "center",
+  },
+
+  // Image input section - Improved layout
+  imageInputSection: {
+    backgroundColor: "rgba(25,35,45,0.9)",
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  imagePickerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    padding: 20,
+  },
+  imagePickerButton: {
+    alignItems: "center",
+    padding: 24,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    width: "45%",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  imagePickerText: {
+    color: "white",
+    marginTop: 12,
+    fontWeight: "500",
+    fontSize: 16,
+  },
+  imagePreviewContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  imagePreview: {
+    width: "100%",
+    height: 260,
+    borderRadius: 18,
+    marginBottom: 20,
+  },
+  imageButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  resetImageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+  },
+  resetImageText: {
+    color: "white",
+    marginLeft: 8,
+    fontSize: 15,
+  },
+
+  // Button styles - Improved appearance
+  getRecipesButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.5,
+    shadowRadius: 6,
+  },
+  disabledButton: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    elevation: 0,
+    shadowOpacity: 0,
+  },
+  buttonIcon: {
+    marginRight: 12,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 17,
+    letterSpacing: 0.5,
+  },
+
+  // Enhanced Recipe Cards - Updated with modern, stylish design
+  recipesContainer: {
+    backgroundColor: "rgba(25,35,45,0.9)",
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 24,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  recipesTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  recipesSubheader: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.8)",
+    fontStyle: "italic",
+    marginBottom: 20,
+    lineHeight: 22,
+  },
+  recipesList: {
+    marginTop: 10,
+  },
+  recipeSeparator: {
+    height: 16,
+  },
+  
+  // Simple Recipe Card that matches your app design
+  simpleRecipeCard: {
+    backgroundColor: "rgba(40,50,60,0.8)",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  recipeCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  recipeCardBadgeText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  recipeCardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 8,
+  },
+  recipeCardDescription: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.8)",
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  recipeStatsRow: {
+    flexDirection: "row",
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  recipeStat: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  recipeStatText: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 13,
+    marginLeft: 6,
+  },
+  viewFullRecipeContainer: {
+    marginTop: 10,
+  },
+  viewFullRecipeButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  viewFullRecipeText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  // Enhanced Recipe Detail Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    backgroundColor: "#000",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    height: "90%",
+    paddingBottom: 30,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.1)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.1)",
+  },
+  modalBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    marginRight: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+    letterSpacing: 0.5,
+  },
+  modalScrollView: {
+    flex: 1,
+  },
+  modalContent: {
+    padding: 24,
+    paddingBottom: 40,
+  },
+  recipeDetailTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 16,
+    letterSpacing: 0.5,
+  },
+  recipeDetailDescription: {
+    fontSize: 16,
+    color: "rgba(255,255,255,0.85)",
+    marginBottom: 28,
+    lineHeight: 24,
+  },
+  recipeDetailSection: {
+    marginBottom: 24,
+    backgroundColor: "rgba(40,50,60,0.6)",
+    borderRadius: 16,
+    padding: 16,
+  },
+  recipeDetailSectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.1)",
+  },
+  recipeDetailIngredientItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 12,
+    paddingVertical: 4,
+  },
+  ingredientBullet: {
+    marginRight: 10,
+    marginTop: 6,
+  },
+  recipeDetailIngredientText: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.9)",
+    flex: 1,
+    lineHeight: 22,
+  },
+  recipeDetailInstructionItem: {
+    flexDirection: "row",
+    marginBottom: 16,
+  },
+  instructionNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    marginTop: 2,
+  },
+  instructionNumberText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  recipeDetailInstructionText: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.9)",
+    flex: 1,
+    lineHeight: 22,
+  },
+  noContentText: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.5)",
+    fontStyle: "italic",
+    textAlign: "center",
+    padding: 10,
+  },
+  
+  // Cook Now Button
+  cookNowButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    marginTop: 20,
+    marginBottom: 40,
+    elevation: 4,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  cookNowButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  
+  // Loading overlay
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
+  },
+  loadingContainer: {
+    backgroundColor: "rgba(25,35,45,0.95)",
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    minWidth: width * 0.8,
+    elevation: 10,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 25,
+  },
+  loadingIconContainer: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "rgba(255,255,255,0.07)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.15)",
+  },
+  loadingText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+  loadingSubtext: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  loadingDotsContainer: {
+    flexDirection: "row",
+    marginTop: 16,
+    height: 10,
+    alignItems: "center",
+  },
+  loadingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.primary,
+    marginHorizontal: 4,
+  },
+
+  // Info section
+  infoContainer: {
+    backgroundColor: "rgba(25,35,45,0.9)",
+    borderRadius: 20,
+    padding: 20,
+    elevation: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  infoTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "white",
+    marginBottom: 18,
+    letterSpacing: 0.5,
+  },
+  infoItem: {
+    flexDirection: "row",
+    marginBottom: 16,
+    alignItems: "flex-start",
+  },
+  infoIcon: {
+    marginRight: 14,
+    marginTop: 2,
+  },
+  infoText: {
+    color: "rgba(255,255,255,0.85)",
+    flex: 1,
+    lineHeight: 24,
+    fontSize: 16,
+  },
+});
+
+export default styles;
