@@ -13,6 +13,10 @@ const taskSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  starred: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -23,7 +27,7 @@ const todoListSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    default: "Namnlös lista" 
+    default: "Namnlös lista"
   },
   tasks: {
     type: [taskSchema],
@@ -32,7 +36,7 @@ const todoListSchema = new mongoose.Schema({
   theme: {
     type: String,
     required: true,
-    default: "photo_lighthouse" 
+    default: "photo_lighthouse"
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
