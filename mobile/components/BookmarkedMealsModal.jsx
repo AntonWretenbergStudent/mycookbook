@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -10,21 +10,21 @@ import {
   TouchableWithoutFeedback,
   FlatList,
   ActivityIndicator
-} from 'react-native';
-import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
-import COLORS from "../constants/colors";
-import { API_URI } from "../constants/api";
-import { useAuthStore } from "../store/authStore";
+} from 'react-native'
+import { Ionicons } from "@expo/vector-icons"
+import { Image } from "expo-image"
+import COLORS from "../constants/colors"
+import { API_URI } from "../constants/api"
+import { useAuthStore } from "../store/authStore"
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get('window')
 
 const BookmarkedMealsModal = ({ visible, onClose, mealType, onSelectMeal }) => {
-  const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { token } = useAuthStore();
+  const [bookmarks, setBookmarks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { token } = useAuthStore()
   
-  const modalAnimation = React.useRef(new Animated.Value(0)).current;
+  const modalAnimation = React.useRef(new Animated.Value(0)).current
   
   useEffect(() => {
     if (visible) {
@@ -32,71 +32,71 @@ const BookmarkedMealsModal = ({ visible, onClose, mealType, onSelectMeal }) => {
         toValue: 1,
         useNativeDriver: true,
         friction: 8
-      }).start();
+      }).start()
       
       // Fetch bookmarks when modal opens
-      fetchBookmarks();
+      fetchBookmarks()
     } else {
       Animated.timing(modalAnimation, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true
-      }).start();
+      }).start()
     }
-  }, [visible]);
+  }, [visible])
 
   const fetchBookmarks = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       const response = await fetch(`${API_URI}/bookmarks`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
+      })
 
-      if (!response.ok) throw new Error("Failed to fetch bookmarks");
+      if (!response.ok) throw new Error("Failed to fetch bookmarks")
       
-      const data = await response.json();
-      setBookmarks(data);
+      const data = await response.json()
+      setBookmarks(data)
     } catch (error) {
-      console.error('Error loading bookmarks:', error);
+      console.error('Error loading bookmarks:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const translateY = modalAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: [height, 0]
-  });
+  })
 
   const getMealTitle = () => {
     switch(mealType) {
-      case 'breakfast': return 'Breakfast';
-      case 'lunch': return 'Lunch';
-      case 'dinner': return 'Dinner';
-      default: return 'Meal';
+      case 'breakfast': return 'Breakfast'
+      case 'lunch': return 'Lunch'
+      case 'dinner': return 'Dinner'
+      default: return 'Meal'
     }
-  };
+  }
 
   const getMealIcon = () => {
     switch(mealType) {
-      case 'breakfast': return 'sunny-outline';
-      case 'lunch': return 'restaurant-outline';
-      case 'dinner': return 'moon-outline';
-      default: return 'restaurant-outline';
+      case 'breakfast': return 'sunny-outline'
+      case 'lunch': return 'restaurant-outline'
+      case 'dinner': return 'moon-outline'
+      default: return 'restaurant-outline'
     }
-  };
+  }
 
   const getMealColor = () => {
     switch(mealType) {
-      case 'breakfast': return '#f39c12';
-      case 'lunch': return '#3498db';
-      case 'dinner': return '#9b59b6';
-      default: return COLORS.primary;
+      case 'breakfast': return '#f39c12'
+      case 'lunch': return '#3498db'
+      case 'dinner': return '#9b59b6'
+      default: return COLORS.primary
     }
-  };
+  }
 
   const renderRatingStars = (rating) => {
-    const stars = [];
+    const stars = []
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <Ionicons
@@ -106,10 +106,10 @@ const BookmarkedMealsModal = ({ visible, onClose, mealType, onSelectMeal }) => {
           color={i <= rating ? "#f4b400" : COLORS.placeholderText}
           style={{ marginRight: 2 }}
         />
-      );
+      )
     }
-    return stars;
-  };
+    return stars
+  }
 
   const handleSelectMeal = (recipe) => {
     // Format the recipe for diary entry
@@ -120,11 +120,11 @@ const BookmarkedMealsModal = ({ visible, onClose, mealType, onSelectMeal }) => {
       image: recipe.image,
       rating: recipe.rating,
       isBookmarked: true
-    };
+    }
     
-    onSelectMeal(meal);
-    onClose();
-  };
+    onSelectMeal(meal)
+    onClose()
+  }
 
   const renderBookmarkItem = ({ item }) => (
     <TouchableOpacity 
@@ -155,7 +155,7 @@ const BookmarkedMealsModal = ({ visible, onClose, mealType, onSelectMeal }) => {
         </View>
       </View>
     </TouchableOpacity>
-  );
+  )
 
   return (
     <Modal
@@ -212,8 +212,8 @@ const BookmarkedMealsModal = ({ visible, onClose, mealType, onSelectMeal }) => {
         </View>
       </TouchableWithoutFeedback>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   overlay: {
@@ -322,6 +322,6 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     flex: 1,
   },
-});
+})
 
-export default BookmarkedMealsModal;
+export default BookmarkedMealsModal

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -8,26 +8,23 @@ import {
   ActivityIndicator,
   Alert,
   FlatList
-} from 'react-native';
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from "expo-router";
-import COLORS from "../constants/colors";
-import styles from "../assets/styles/recipe-detail.styles";
-import { useAuthStore } from "../store/authStore";
-import { API_URI } from "../constants/api";
+} from 'react-native'
+import { Image } from "expo-image"
+import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from 'expo-linear-gradient'
+import { useLocalSearchParams, useRouter } from "expo-router"
+import COLORS from "../constants/colors"
+import styles from "../assets/styles/recipe-detail.styles"
+import { useAuthStore } from "../store/authStore"
+import { API_URI } from "../constants/api"
 
 export default function RecipeDetailScreen() {
-  const params = useLocalSearchParams();
-  const router = useRouter();
-  const { token } = useAuthStore();
+  const params = useLocalSearchParams()
+  const router = useRouter()
+  const { token } = useAuthStore()
+  const [isBookmarked, setIsBookmarked] = useState(params.isBookmarked === 'true')
+  const [bookmarkLoading, setBookmarkLoading] = useState(false)
   
-  // State for bookmark functionality
-  const [isBookmarked, setIsBookmarked] = useState(params.isBookmarked === 'true');
-  const [bookmarkLoading, setBookmarkLoading] = useState(false);
-  
-  // Get recipe data from params
   const recipe = {
     id: params.id,
     title: params.title || 'Recipe Name',
@@ -39,31 +36,29 @@ export default function RecipeDetailScreen() {
     createdAt: params.createdAt || new Date().toISOString(),
     nutrition: params.nutrition ? JSON.parse(params.nutrition) : { calories: 0 },
     ingredients: params.ingredients ? JSON.parse(params.ingredients) : []
-  };
+  }
   
-  // Format date
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
     return date.getDate() + " " + 
       ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][date.getMonth()] + 
-      ". " + date.getFullYear();
-  };
+      ". " + date.getFullYear()
+  }
   
-  // Handle bookmark toggle
   const handleBookmark = async () => {
     try {
-      setBookmarkLoading(true);
+      setBookmarkLoading(true)
       
       if (isBookmarked) {
         // Remove bookmark
         const response = await fetch(`${API_URI}/bookmarks/${recipe.id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
-        });
+        })
 
-        if (!response.ok) throw new Error("Failed to remove bookmark");
+        if (!response.ok) throw new Error("Failed to remove bookmark")
         
-        setIsBookmarked(false);
+        setIsBookmarked(false)
       } else {
         // Add bookmark
         const response = await fetch(`${API_URI}/bookmarks`, {
@@ -73,23 +68,23 @@ export default function RecipeDetailScreen() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ recipeId: recipe.id }),
-        });
+        })
 
-        if (!response.ok) throw new Error("Failed to add bookmark");
+        if (!response.ok) throw new Error("Failed to add bookmark")
         
-        setIsBookmarked(true);
+        setIsBookmarked(true)
       }
     } catch (error) {
-      console.error("Error updating bookmark:", error);
-      Alert.alert("Error", error.message || "Failed to update bookmark");
+      console.error("Error updating bookmark:", error)
+      Alert.alert("Error", error.message || "Failed to update bookmark")
     } finally {
-      setBookmarkLoading(false);
+      setBookmarkLoading(false)
     }
-  };
+  }
   
   // Render rating stars
   const renderRatingStars = (rating) => {
-    const stars = [];
+    const stars = []
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <Ionicons
@@ -99,10 +94,10 @@ export default function RecipeDetailScreen() {
           color={i <= rating ? "#f4b400" : "rgba(255,255,255,0.5)"}
           style={{ marginRight: 2 }}
         />
-      );
+      )
     }
-    return stars;
-  };
+    return stars
+  }
 
   // Render ingredient item
   const renderIngredientItem = ({ item }) => (
@@ -123,7 +118,7 @@ export default function RecipeDetailScreen() {
         ) : null}
       </Text>
     </View>
-  );
+  )
   
   return (
     <View style={styles.container}>
@@ -269,5 +264,5 @@ export default function RecipeDetailScreen() {
         </View>
       </ScrollView>
     </View>
-  );
+  )
 }

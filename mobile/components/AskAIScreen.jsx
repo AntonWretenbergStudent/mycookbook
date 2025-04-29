@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react"
 import {
   View,
   Text,
@@ -13,37 +13,34 @@ import {
   Modal,
   Animated,
   Easing,
-} from "react-native";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import COLORS from "../constants/colors";
-import { useAuthStore } from "../store/authStore";
-import { API_URI } from "../constants/api";
+} from "react-native"
+import { Image } from "expo-image"
+import { Ionicons } from "@expo/vector-icons"
+import * as ImagePicker from "expo-image-picker"
+import * as FileSystem from "expo-file-system"
+import COLORS from "../constants/colors"
+import { useAuthStore } from "../store/authStore"
+import { API_URI } from "../constants/api"
 
 export default function AskAIScreen() {
-  const [ingredients, setIngredients] = useState([]);
-  const [currentIngredient, setCurrentIngredient] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [image, setImage] = useState(null);
-  const [imageBase64, setImageBase64] = useState(null);
-  const [aiResponse, setAiResponse] = useState(null);
-  const [parsedRecipes, setParsedRecipes] = useState([]);
-  const [activeTab, setActiveTab] = useState("text"); // 'text' or 'image'
-  const { token } = useAuthStore();
+  const [ingredients, setIngredients] = useState([])
+  const [currentIngredient, setCurrentIngredient] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [image, setImage] = useState(null)
+  const [imageBase64, setImageBase64] = useState(null)
+  const [aiResponse, setAiResponse] = useState(null)
+  const [parsedRecipes, setParsedRecipes] = useState([])
+  const [activeTab, setActiveTab] = useState("text")
+  const { token } = useAuthStore()
   
-  // State for recipe detail modal
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
-  // Animation values for loading
-  const rotation = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const rotation = useRef(new Animated.Value(0)).current
+  const fadeAnim = useRef(new Animated.Value(0)).current
   
-  const inputRef = useRef(null);
+  const inputRef = useRef(null)
 
-  // Start animation when loading
   useEffect(() => {
     if (loading) {
       // Rotation animation for loading icon
@@ -54,62 +51,57 @@ export default function AskAIScreen() {
           easing: Easing.linear,
           useNativeDriver: true,
         })
-      ).start();
+      ).start()
 
       // Fade in animation for overlay
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      }).start()
     } else {
-      // Stop animations when loading stops
-      rotation.stopAnimation();
+      rotation.stopAnimation()
       
-      // Fade out animation for overlay
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
-      }).start();
+      }).start()
     }
-  }, [loading]);
+  }, [loading])
 
-  // Create rotation interpolation
   const spin = rotation.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "360deg"],
-  });
+  })
 
-  // Handle adding an ingredient
   const addIngredient = () => {
     if (currentIngredient.trim().length > 0) {
-      setIngredients([...ingredients, currentIngredient.trim()]);
-      setCurrentIngredient("");
-      // Focus back on the input after adding
+      setIngredients([...ingredients, currentIngredient.trim()])
+      setCurrentIngredient("")
       if (inputRef.current) {
-        inputRef.current.focus();
+        inputRef.current.focus()
       }
     }
-  };
+  }
 
   // Handle removing an ingredient
   const removeIngredient = (index) => {
-    const newIngredients = [...ingredients];
-    newIngredients.splice(index, 1);
-    setIngredients(newIngredients);
-  };
+    const newIngredients = [...ingredients]
+    newIngredients.splice(index, 1)
+    setIngredients(newIngredients)
+  }
 
   // Handle picking an image from library
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
           "We need camera roll permissions to upload an image"
-        );
-        return;
+        )
+        return
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -118,39 +110,39 @@ export default function AskAIScreen() {
         aspect: [4, 3],
         quality: 0.5,
         base64: true,
-      });
+      })
 
       if (!result.canceled) {
-        setImage(result.assets[0].uri);
+        setImage(result.assets[0].uri)
 
         if (result.assets[0].base64) {
-          setImageBase64(result.assets[0].base64);
+          setImageBase64(result.assets[0].base64)
         } else {
           const base64 = await FileSystem.readAsStringAsync(
             result.assets[0].uri,
             {
               encoding: FileSystem.EncodingType.Base64,
             }
-          );
-          setImageBase64(base64);
+          )
+          setImageBase64(base64)
         }
       }
     } catch (error) {
-      console.log("Error picking image:", error);
-      Alert.alert("Error", "There was a problem selecting your image");
+      console.log("Error picking image:", error)
+      Alert.alert("Error", "There was a problem selecting your image")
     }
-  };
+  }
 
   // Handle taking a photo
   const takePhoto = async () => {
     try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status } = await ImagePicker.requestCameraPermissionsAsync()
       if (status !== "granted") {
         Alert.alert(
           "Permission Denied",
           "We need camera permissions to take a photo"
-        );
-        return;
+        )
+        return
       }
 
       const result = await ImagePicker.launchCameraAsync({
@@ -158,122 +150,113 @@ export default function AskAIScreen() {
         aspect: [4, 3],
         quality: 0.5,
         base64: true,
-      });
+      })
 
       if (!result.canceled) {
-        setImage(result.assets[0].uri);
+        setImage(result.assets[0].uri)
 
         if (result.assets[0].base64) {
-          setImageBase64(result.assets[0].base64);
+          setImageBase64(result.assets[0].base64)
         } else {
           const base64 = await FileSystem.readAsStringAsync(
             result.assets[0].uri,
             {
               encoding: FileSystem.EncodingType.Base64,
             }
-          );
-          setImageBase64(base64);
+          )
+          setImageBase64(base64)
         }
       }
     } catch (error) {
-      console.log("Error taking photo:", error);
-      Alert.alert("Error", "There was a problem taking the photo");
+      console.log("Error taking photo:", error)
+      Alert.alert("Error", "There was a problem taking the photo")
     }
-  };
+  }
 
   // Reset the image
   const resetImage = () => {
-    setImage(null);
-    setImageBase64(null);
-    setAiResponse(null);
-    setParsedRecipes([]);
-  };
+    setImage(null)
+    setImageBase64(null)
+    setAiResponse(null)
+    setParsedRecipes([])
+  }
 
-  // Improved AI response parser that correctly identifies complete recipes
   const formatAIResponse = (responseText) => {
-    if (!responseText) return [];
+    if (!responseText) return []
     
-    console.log("AI response:", responseText);
+    console.log("AI response:", responseText)
 
-    // Initialize recipes array
-    const recipes = [];
+    const recipes = []
     
     try {
-      // Look for "Recipe X:" section headers
-      const recipePattern = /Recipe\s+\d+:[\s\S]*?(?=Recipe\s+\d+:|$)/g;
-      const matches = Array.from(responseText.matchAll(recipePattern));
+      const recipePattern = /Recipe\s+\d+:[\s\S]*?(?=Recipe\s+\d+:|$)/g
+      const matches = Array.from(responseText.matchAll(recipePattern))
       
       if (matches.length > 0) {
-        // Process each recipe section
         matches.forEach((match, index) => {
-          const recipeText = match[0];
+          const recipeText = match[0]
           
-          // Create recipe object with default values
           const recipe = {
             title: `Recipe ${index + 1}`,
             description: "",
             ingredients: [],
             instructions: []
-          };
-          
-          // Extract title
-          const titleMatch = recipeText.match(/Recipe\s+\d+:\s*(.+?)(?:\r|\n|$)/);
-          if (titleMatch && titleMatch[1]) {
-            recipe.title = titleMatch[1].trim();
           }
           
-          // Extract description
-          const descriptionMatch = recipeText.match(/Description:[\s\S]*?(?=Ingredients:|$)/i);
+          const titleMatch = recipeText.match(/Recipe\s+\d+:\s*(.+?)(?:\r|\n|$)/)
+          if (titleMatch && titleMatch[1]) {
+            recipe.title = titleMatch[1].trim()
+          }
+          
+          const descriptionMatch = recipeText.match(/Description:[\s\S]*?(?=Ingredients:|$)/i)
           if (descriptionMatch) {
-            const descriptionText = descriptionMatch[0].replace(/Description:/i, "").trim();
+            const descriptionText = descriptionMatch[0].replace(/Description:/i, "").trim()
             recipe.description = descriptionText;
           }
           
-          // Extract ingredients
-          const ingredientsMatch = recipeText.match(/Ingredients:[\s\S]*?(?=Instructions:|$)/i);
+          const ingredientsMatch = recipeText.match(/Ingredients:[\s\S]*?(?=Instructions:|$)/i)
           if (ingredientsMatch) {
-            const ingredientsText = ingredientsMatch[0].replace(/Ingredients:/i, "").trim();
+            const ingredientsText = ingredientsMatch[0].replace(/Ingredients:/i, "").trim()
             recipe.ingredients = ingredientsText
               .split(/\n/)
               .map(line => line.trim())
               .filter(line => line.length > 0)
-              .map(line => line.replace(/^[-•*]\s*/, ''));
+              .map(line => line.replace(/^[-•*]\s*/, ''))
           }
           
-          // Extract instructions
-          const instructionsMatch = recipeText.match(/Instructions:[\s\S]*?$/i);
+          const instructionsMatch = recipeText.match(/Instructions:[\s\S]*?$/i)
           if (instructionsMatch) {
-            const instructionsText = instructionsMatch[0].replace(/Instructions:/i, "").trim();
+            const instructionsText = instructionsMatch[0].replace(/Instructions:/i, "").trim()
             recipe.instructions = instructionsText
               .split(/\n/)
               .map(line => line.trim())
               .filter(line => line.length > 0)
-              .map(line => line.replace(/^\d+\.\s*/, ''));
+              .map(line => line.replace(/^\d+\.\s*/, ''))
           }
           
           // Add recipe to array if it has content
           if (recipe.title) {
-            recipes.push(recipe);
+            recipes.push(recipe)
           }
-        });
+        })
       } 
       
       // If no matches with the pattern, try a fallback approach
       if (recipes.length === 0) {
-        const lines = responseText.split('\n');
-        let currentRecipe = null;
-        let currentSection = null;
+        const lines = responseText.split('\n')
+        let currentRecipe = null
+        let currentSection = null
         
         for (const line of lines) {
-          const trimmedLine = line.trim();
+          const trimmedLine = line.trim()
           
-          if (!trimmedLine) continue;
+          if (!trimmedLine) continue
           
           // Check for recipe header
-          const recipeMatch = trimmedLine.match(/Recipe\s+(\d+):\s*(.*)/i);
+          const recipeMatch = trimmedLine.match(/Recipe\s+(\d+):\s*(.*)/i)
           if (recipeMatch) {
             if (currentRecipe) {
-              recipes.push(currentRecipe);
+              recipes.push(currentRecipe)
             }
             
             currentRecipe = {
@@ -281,106 +264,103 @@ export default function AskAIScreen() {
               description: "",
               ingredients: [],
               instructions: []
-            };
-            currentSection = null;
-            continue;
+            }
+            currentSection = null
+            continue
           }
           
           // Check for section headers
           if (trimmedLine.match(/^Description:/i)) {
-            currentSection = "description";
-            continue;
+            currentSection = "description"
+            continue
           } else if (trimmedLine.match(/^Ingredients:/i)) {
-            currentSection = "ingredients";
-            continue;
+            currentSection = "ingredients"
+            continue
           } else if (trimmedLine.match(/^Instructions:|^Steps:/i)) {
-            currentSection = "instructions";
-            continue;
+            currentSection = "instructions"
+            continue
           }
           
-          // Add content to current section
           if (currentRecipe && currentSection) {
             if (currentSection === "description") {
-              currentRecipe.description += (currentRecipe.description ? " " : "") + trimmedLine;
+              currentRecipe.description += (currentRecipe.description ? " " : "") + trimmedLine
             } else if (currentSection === "ingredients") {
-              currentRecipe.ingredients.push(trimmedLine.replace(/^[-•*]\s*/, ''));
+              currentRecipe.ingredients.push(trimmedLine.replace(/^[-•*]\s*/, ''))
             } else if (currentSection === "instructions") {
-              currentRecipe.instructions.push(trimmedLine.replace(/^\d+\.\s*/, ''));
+              currentRecipe.instructions.push(trimmedLine.replace(/^\d+\.\s*/, ''))
             }
           }
         }
         
         // Add the last recipe if we have one
         if (currentRecipe) {
-          recipes.push(currentRecipe);
+          recipes.push(currentRecipe)
         }
       }
       
-      console.log(`Found ${recipes.length} recipes`);
+      console.log(`Found ${recipes.length} recipes`)
       
-      // Return recipes with minimal content validation
       return recipes.map(recipe => ({
         ...recipe,
         ingredients: recipe.ingredients || [],
         instructions: recipe.instructions || []
-      }));
+      }))
     } catch (error) {
-      console.error("Error parsing AI response:", error);
+      console.error("Error parsing AI response:", error)
       
-      // Return a simplified single recipe as fallback
       return [{
         title: "Recipe suggestion",
         description: "Based on your ingredients",
         ingredients: [],
         instructions: [responseText.trim()]
-      }];
+      }]
     }
-  };
+  }
 
   // Open recipe detail modal
   const openRecipeDetail = (recipe) => {
-    setSelectedRecipe(recipe);
-    setModalVisible(true);
-  };
+    setSelectedRecipe(recipe)
+    setModalVisible(true)
+  }
 
   // Get suggestions from AI
   const getAISuggestions = async () => {
     try {
-      setLoading(true);
-      setAiResponse(null);
-      setParsedRecipes([]);
+      setLoading(true)
+      setAiResponse(null)
+      setParsedRecipes([])
 
       // Validate inputs based on active tab
       if (activeTab === "text" && ingredients.length === 0) {
-        Alert.alert("Error", "Please add at least one ingredient");
-        setLoading(false);
-        return;
+        Alert.alert("Error", "Please add at least one ingredient")
+        setLoading(false)
+        return
       }
 
       if (activeTab === "image" && !imageBase64) {
         Alert.alert(
           "Error",
           "Please take or select a photo of your ingredients"
-        );
-        setLoading(false);
-        return;
+        )
+        setLoading(false)
+        return
       }
 
       // Prepare request data
-      let requestData = {};
+      let requestData = {}
 
       if (activeTab === "text") {
         requestData = {
           ingredients: ingredients,
           type: "text",
-        };
+        }
       } else {
         // Format the image data for API
-        const imageData = `data:image/jpeg;base64,${imageBase64}`;
+        const imageData = `data:image/jpeg;base64,${imageBase64}`
         requestData = {
           image: imageData,
           type: "image",
-        };
+        }
       }
 
       // Call API
@@ -391,27 +371,27 @@ export default function AskAIScreen() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestData),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to get suggestions");
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to get suggestions")
       }
 
-      const data = await response.json();
-      setAiResponse(data.response);
+      const data = await response.json()
+      setAiResponse(data.response)
       
       // Parse the AI response
-      const recipes = formatAIResponse(data.response);
-      setParsedRecipes(recipes);
+      const recipes = formatAIResponse(data.response)
+      setParsedRecipes(recipes)
       
     } catch (error) {
-      console.error("Error getting AI suggestions:", error);
-      Alert.alert("Error", error.message || "Something went wrong");
+      console.error("Error getting AI suggestions:", error)
+      Alert.alert("Error", error.message || "Something went wrong")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Handle rendering ingredient items
   const renderIngredientItem = ({ item, index }) => (
@@ -425,13 +405,13 @@ export default function AskAIScreen() {
         />
       </TouchableOpacity>
     </View>
-  );
+  )
 
   // Simplified recipe card that matches your app design
   const renderRecipeCard = ({ item, index }) => {
     // Get counts for display
-    const ingredientCount = item.ingredients ? item.ingredients.length : 0;
-    const instructionCount = item.instructions ? item.instructions.length : 0;
+    const ingredientCount = item.ingredients ? item.ingredients.length : 0
+    const instructionCount = item.instructions ? item.instructions.length : 0
     
     return (
       <TouchableOpacity 
@@ -473,8 +453,8 @@ export default function AskAIScreen() {
           <Text style={styles.viewRecipeButtonText}>View Full Recipe</Text>
         </TouchableOpacity>
       </TouchableOpacity>
-    );
-  };
+    )
+  }
 
   // Render the main content based on the active tab
   const renderInputContent = () => {
@@ -554,7 +534,7 @@ export default function AskAIScreen() {
             )}
           </TouchableOpacity>
         </View>
-      );
+      )
     } else {
       return (
         <View style={styles.inputSection}>
@@ -631,13 +611,13 @@ export default function AskAIScreen() {
             </View>
           )}
         </View>
-      );
+      )
     }
-  };
+  }
 
   // Render the AI response as recipe cards
   const renderRecipes = () => {
-    if (!aiResponse || parsedRecipes.length === 0) return null;
+    if (!aiResponse || parsedRecipes.length === 0) return null
     
     return (
       <View style={styles.recipesContainer}>
@@ -657,8 +637,8 @@ export default function AskAIScreen() {
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
         />
       </View>
-    );
-  };
+    )
+  }
 
   return (
     <KeyboardAvoidingView
@@ -830,7 +810,7 @@ export default function AskAIScreen() {
         </Animated.View>
       )}
     </KeyboardAvoidingView>
-  );
+  )
 }
 
 const styles = {
@@ -1246,4 +1226,4 @@ const styles = {
     fontSize: 16,
     textAlign: "center",
   }
-};
+}

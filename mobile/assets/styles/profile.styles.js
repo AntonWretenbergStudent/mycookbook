@@ -1,6 +1,5 @@
-// styles/profile.styles.js
-import { StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
+import { StyleSheet } from "react-native"
+import COLORS from "../../constants/colors"
 
 const styles = StyleSheet.create({
   // Main container and background
@@ -81,30 +80,62 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.5)',
   },
   
-// Logout button styles for profile.styles.js
-logoutButton: {
-  position: 'absolute',
-  right: 16,
-  top: 60,
-  zIndex: 10,
-  backgroundColor: 'rgba(255,255,255,0.15)',
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 8,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.2)',
-},
-logoutText: {
-  color: 'white',
-  fontWeight: '600',
-  fontSize: 14,
-},
+  // Logout button
+  logoutButton: {
+    position: 'absolute',
+    right: 16,
+    top: 60,
+    zIndex: 10,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
   logoutText: {
-    color: COLORS.white,
-    fontWeight: "600",
-    marginLeft: 8,
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  
+  // Tab selector
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(30,40,50,0.8)',
+    marginHorizontal: 16,
+    marginVertical: 16,
+    borderRadius: 10,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  activeTab: {
+    backgroundColor: COLORS.primary,
+  },
+  tabText: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  activeTabText: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: '600',
+  },
+  tabContent: {
+    flex: 1,
+  },
+  
+  // Recipe section
+  recipesContainer: {
+    flex: 1,
   },
   
   // Recipes header
@@ -219,6 +250,6 @@ logoutText: {
     fontWeight: "600",
     fontSize: 14,
   },
-});
+})
 
-export default styles;
+export default styles

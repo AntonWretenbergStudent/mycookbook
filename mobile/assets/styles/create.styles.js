@@ -1,6 +1,6 @@
 // styles/create.styles.js
-import { StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
+import { StyleSheet } from "react-native"
+import COLORS from "../../constants/colors"
 
 const styles = StyleSheet.create({
   // Main container and background
@@ -267,6 +267,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: "500",
   },
-});
+})
 
-export default styles;
+export default styles

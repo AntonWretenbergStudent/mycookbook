@@ -93,7 +93,7 @@ export default function CreateRecipeScreen() {
     }
 
     const newIngredient = {
-      id: Date.now().toString(), // Simple unique ID
+      id: Date.now().toString(),
       name: currentIngredient.trim(),
       quantity: currentQuantity.trim() || "to taste",
       unit: currentUnit.trim() || ""

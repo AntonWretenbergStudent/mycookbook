@@ -1,23 +1,23 @@
-import { useState } from "react";
+import { useState } from "react"
 import {
   View,
   Text,
   TouchableOpacity,
   StatusBar,
   Image,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import COLORS from "../../constants/colors";
-import { useRouter } from "expo-router";
+} from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from "expo-linear-gradient"
+import COLORS from "../../constants/colors"
+import { useRouter } from "expo-router"
 
 // Import the original create screen as a component
-import CreateRecipeScreen from "../../components/CreateRecipeScreen";
-import AskAIScreen from "../../components/AskAIScreen";
+import CreateRecipeScreen from "../../components/CreateRecipeScreen"
+import AskAIScreen from "../../components/AskAIScreen"
 
 export default function Create() {
-  const router = useRouter();
-  const [selectedMode, setSelectedMode] = useState(null);
+  const router = useRouter()
+  const [selectedMode, setSelectedMode] = useState(null)
 
   const renderSelectionScreen = () => (
     <View style={styles.selectionContainer}>
@@ -55,7 +55,7 @@ export default function Create() {
         <Ionicons name="chevron-forward" size={24} color="rgba(255,255,255,0.5)" />
       </TouchableOpacity>
     </View>
-  );
+  )
   
   return (
     <View style={styles.mainContainer}>
@@ -89,7 +89,7 @@ export default function Create() {
       {selectedMode === 'create' && <CreateRecipeScreen />}
       {selectedMode === 'ai' && <AskAIScreen />}
     </View>
-  );
+  )
 }
 
 const styles = {
@@ -169,4 +169,4 @@ const styles = {
     color: 'rgba(255,255,255,0.7)',
     lineHeight: 20,
   },
-};
+}

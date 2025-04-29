@@ -6,6 +6,7 @@ import recipesRoutes from "./routes/recipesRoutes.js"
 import bookmarkRoutes from "./routes/bookmarkRoutes.js"
 import diaryRoutes from "./routes/diaryRoutes.js"
 import aiRoutes from "./routes/aiRoutes.js"
+//import todoListRoutes from "./routes/todoListRoutes.js"
 
 import { connectDB } from "./lib/db.js"
 
@@ -22,6 +23,7 @@ app.use("/api/recipes", recipesRoutes)
 app.use("/api/bookmarks", bookmarkRoutes)
 app.use("/api/diary", diaryRoutes)
 app.use("/api/ai", aiRoutes)
+//app.use("/api/todolists", todoListRoutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)

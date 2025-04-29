@@ -9,189 +9,188 @@ import {
   StatusBar,
   TextInput,
   ScrollView
-} from "react-native";
-import React, { useState, useCallback } from "react";
-import { Image } from "expo-image";
-import { useFocusEffect } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
-import { formatPublishDate } from "../../lib/utils";
-import { useRouter } from "expo-router";
-import Loader from "../../components/Loader";
-import { useAuthStore } from "../../store/authStore";
-import { API_URI } from "../../constants/api";
-import styles from "../../assets/styles/bookmark.styles";
+} from "react-native"
+import React, { useState, useCallback } from "react"
+import { Image } from "expo-image"
+import { useFocusEffect } from '@react-navigation/native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Ionicons } from "@expo/vector-icons"
+import COLORS from "../../constants/colors"
+import { formatPublishDate } from "../../lib/utils"
+import { useRouter } from "expo-router"
+import Loader from "../../components/Loader"
+import { useAuthStore } from "../../store/authStore"
+import { API_URI } from "../../constants/api"
+import styles from "../../assets/styles/bookmark.styles"
 
-// For simulating delay like in your other components
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 // Filter categories
 const FILTERS = {
   ALL: 'all',
   HIGH_RATED: 'high_rated'
-};
+}
 
 export default function Bookmark() {
-  const [bookmarks, setBookmarks] = useState([]);
-  const [allBookmarks, setAllBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [removeLoading, setRemoveLoading] = useState({});
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState(FILTERS.ALL);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedItems, setSelectedItems] = useState({});
-  const [batchDeleting, setBatchDeleting] = useState(false);
+  const [bookmarks, setBookmarks] = useState([])
+  const [allBookmarks, setAllBookmarks] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [removeLoading, setRemoveLoading] = useState({})
+  const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeFilter, setActiveFilter] = useState(FILTERS.ALL)
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedItems, setSelectedItems] = useState({})
+  const [batchDeleting, setBatchDeleting] = useState(false)
   
-  const router = useRouter();
-  const { token } = useAuthStore();
+  const router = useRouter()
+  const { token } = useAuthStore()
 
   // Load bookmarks when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      fetchBookmarks();
+      fetchBookmarks()
       return () => {
         // Reset selection mode when leaving the screen
-        setSelectionMode(false);
-        setSelectedItems({});
-      };
+        setSelectionMode(false)
+        setSelectedItems({})
+      }
     }, [])
-  );
+  )
 
   const fetchBookmarks = async () => {
-    setError(null);
+    setError(null)
     
     try {
-      setLoading(true);
+      setLoading(true)
       
       if (!token) {
-        throw new Error("Authentication required");
+        throw new Error("Authentication required")
       }
       
       const response = await fetch(`${API_URI}/bookmarks`, {
         headers: { Authorization: `Bearer ${token}` },
-      });
+      })
 
       if (response.status === 401) {
-        throw new Error("Session expired. Please login again.");
+        throw new Error("Session expired. Please login again.")
       }
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to fetch bookmarks");
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || "Failed to fetch bookmarks")
       }
       
-      const data = await response.json();
-      const newBookmarks = Array.isArray(data) ? data : [];
+      const data = await response.json()
+      const newBookmarks = Array.isArray(data) ? data : []
       
-      setAllBookmarks(newBookmarks);
-      applyFilters(newBookmarks, searchQuery, activeFilter);
+      setAllBookmarks(newBookmarks)
+      applyFilters(newBookmarks, searchQuery, activeFilter)
     } catch (error) {
-      console.error('Error loading bookmarks:', error);
-      setError(error.message);
-      Alert.alert("Error", error.message);
+      console.error('Error loading bookmarks:', error)
+      setError(error.message)
+      Alert.alert("Error", error.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleRefresh = async () => {
-    setRefreshing(true);
-    await sleep(800);
-    await fetchBookmarks();
-    setRefreshing(false);
-  };
+    setRefreshing(true)
+    await sleep(800)
+    await fetchBookmarks()
+    setRefreshing(false)
+  }
 
   const applyFilters = (data, query, filter) => {
-    let result = [...data];
+    let result = [...data]
     
     // Apply search query
     if (query.trim()) {
-      const searchText = query.toLowerCase();
+      const searchText = query.toLowerCase()
       result = result.filter(item => 
         (item.title && item.title.toLowerCase().includes(searchText)) ||
         (item.caption && item.caption.toLowerCase().includes(searchText)) ||
         (item.username && item.username.toLowerCase().includes(searchText))
-      );
+      )
     }
     
     // Apply category filter
     if (filter !== FILTERS.ALL) {
       switch (filter) {
         case FILTERS.HIGH_RATED:
-          result = result.filter(item => item.rating >= 4);
-          break;
+          result = result.filter(item => item.rating >= 4)
+          break
       }
     }
     
-    setBookmarks(result);
-  };
+    setBookmarks(result)
+  }
 
   const handleSearch = (text) => {
-    setSearchQuery(text);
-    applyFilters(allBookmarks, text, activeFilter);
-  };
+    setSearchQuery(text)
+    applyFilters(allBookmarks, text, activeFilter)
+  }
 
   const handleFilterChange = (filter) => {
-    setActiveFilter(filter);
-    applyFilters(allBookmarks, searchQuery, filter);
-  };
+    setActiveFilter(filter)
+    applyFilters(allBookmarks, searchQuery, filter)
+  }
 
   const toggleSelectionMode = () => {
-    setSelectionMode(!selectionMode);
-    setSelectedItems({});
-  };
+    setSelectionMode(!selectionMode)
+    setSelectedItems({})
+  }
 
   const toggleItemSelection = (id) => {
     setSelectedItems(prev => ({
       ...prev,
       [id]: !prev[id]
-    }));
-  };
+    }))
+  }
 
   const selectAll = () => {
-    const newSelected = {};
+    const newSelected = {}
     bookmarks.forEach(item => {
-      newSelected[item._id] = true;
-    });
-    setSelectedItems(newSelected);
-  };
+      newSelected[item._id] = true
+    })
+    setSelectedItems(newSelected)
+  }
 
   const deselectAll = () => {
-    setSelectedItems({});
-  };
+    setSelectedItems({})
+  }
 
   const getSelectedCount = () => {
-    return Object.values(selectedItems).filter(Boolean).length;
-  };
+    return Object.values(selectedItems).filter(Boolean).length
+  }
 
   const removeBookmark = async (recipeId) => {
     try {
-      setRemoveLoading(prev => ({ ...prev, [recipeId]: true }));
+      setRemoveLoading(prev => ({ ...prev, [recipeId]: true }))
       
       const response = await fetch(`${API_URI}/bookmarks/${recipeId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
-      });
+      })
 
-      if (!response.ok) throw new Error("Failed to remove bookmark");
+      if (!response.ok) throw new Error("Failed to remove bookmark")
       
-      const updatedBookmarks = allBookmarks.filter(bookmark => bookmark._id !== recipeId);
-      setAllBookmarks(updatedBookmarks);
-      applyFilters(updatedBookmarks, searchQuery, activeFilter);
-      Alert.alert("Success", "Recipe removed from bookmarks");
+      const updatedBookmarks = allBookmarks.filter(bookmark => bookmark._id !== recipeId)
+      setAllBookmarks(updatedBookmarks)
+      applyFilters(updatedBookmarks, searchQuery, activeFilter)
+      Alert.alert("Success", "Recipe removed from bookmarks")
     } catch (error) {
-      console.error('Error removing bookmark:', error);
-      Alert.alert("Error", "Failed to remove bookmark");
+      console.error('Error removing bookmark:', error)
+      Alert.alert("Error", "Failed to remove bookmark")
     } finally {
-      setRemoveLoading(prev => ({ ...prev, [recipeId]: false }));
+      setRemoveLoading(prev => ({ ...prev, [recipeId]: false }))
     }
-  };
+  }
 
   const confirmRemove = (recipeId, event) => {
-    if (event) event.stopPropagation();
+    if (event) event.stopPropagation()
     Alert.alert(
       "Remove Bookmark", 
       "Are you sure you want to remove this recipe from bookmarks?", 
@@ -199,18 +198,18 @@ export default function Bookmark() {
         { text: "Cancel", style: "cancel" },
         { text: "Remove", style: "destructive", onPress: () => removeBookmark(recipeId) }
       ]
-    );
-  };
+    )
+  }
 
   const deleteSelectedBookmarks = async () => {
     const selectedIds = Object.entries(selectedItems)
       .filter(([_, selected]) => selected)
-      .map(([id]) => id);
+      .map(([id]) => id)
     
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0) return
     
     try {
-      setBatchDeleting(true);
+      setBatchDeleting(true)
       
       // Create an array of promises for each delete request
       const deletePromises = selectedIds.map(id => 
@@ -218,54 +217,50 @@ export default function Bookmark() {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         })
-      );
+      )
       
-      // Wait for all delete requests to complete
-      const results = await Promise.allSettled(deletePromises);
+      const results = await Promise.allSettled(deletePromises)
       
-      // Count successful and failed deletions
-      const successful = results.filter(r => r.status === 'fulfilled' && r.value.ok).length;
-      const failed = selectedIds.length - successful;
+      const successful = results.filter(r => r.status === 'fulfilled' && r.value.ok).length
+      const failed = selectedIds.length - successful
       
       // Update bookmarks state
       const updatedBookmarks = allBookmarks.filter(bookmark => 
         !selectedItems[bookmark._id]
-      );
+      )
       
-      setAllBookmarks(updatedBookmarks);
-      applyFilters(updatedBookmarks, searchQuery, activeFilter);
+      setAllBookmarks(updatedBookmarks)
+      applyFilters(updatedBookmarks, searchQuery, activeFilter)
       
-      // Show result message
       if (failed === 0) {
         Alert.alert(
           "Success", 
           `${successful} ${successful === 1 ? 'recipe' : 'recipes'} removed from bookmarks`
-        );
+        )
       } else {
         Alert.alert(
           "Partial Success", 
           `${successful} out of ${selectedIds.length} recipes were removed. Please try again for the remaining items.`
-        );
+        )
       }
       
-      // Exit selection mode after batch delete
-      setSelectionMode(false);
-      setSelectedItems({});
+      setSelectionMode(false)
+      setSelectedItems({})
       
     } catch (error) {
-      console.error('Error during batch delete:', error);
-      Alert.alert("Error", "Failed to remove selected bookmarks");
+      console.error('Error during batch delete:', error)
+      Alert.alert("Error", "Failed to remove selected bookmarks")
     } finally {
-      setBatchDeleting(false);
+      setBatchDeleting(false)
     }
-  };
+  }
 
   const confirmBatchDelete = () => {
-    const count = getSelectedCount();
+    const count = getSelectedCount()
     
     if (count === 0) {
-      Alert.alert("Select Recipes", "Please select at least one recipe to delete");
-      return;
+      Alert.alert("Select Recipes", "Please select at least one recipe to delete")
+      return
     }
     
     Alert.alert(
@@ -275,24 +270,22 @@ export default function Bookmark() {
         { text: "Cancel", style: "cancel" },
         { text: "Delete", style: "destructive", onPress: deleteSelectedBookmarks }
       ]
-    );
-  };
+    )
+  }
   
-// This is a partial snippet showing the updated openRecipeDetail function in bookmark.jsx
-
 const openRecipeDetail = (recipe) => {
   if (selectionMode) {
-    toggleItemSelection(recipe._id);
-    return;
+    toggleItemSelection(recipe._id)
+    return
   }
   
   const nutritionParam = recipe.nutrition 
     ? JSON.stringify(recipe.nutrition)
-    : JSON.stringify({ calories: 0 });
+    : JSON.stringify({ calories: 0 })
   
   const ingredientsParam = recipe.ingredients && recipe.ingredients.length > 0
     ? JSON.stringify(recipe.ingredients)
-    : JSON.stringify([]);
+    : JSON.stringify([])
   
   router.push({
     pathname: "/recipe-detail",
@@ -309,11 +302,11 @@ const openRecipeDetail = (recipe) => {
       ingredients: ingredientsParam,
       isBookmarked: 'true'
     }
-  });
-};
+  })
+}
 
   const renderRatingStars = (rating) => {
-    const stars = [];
+    const stars = []
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <Ionicons
@@ -323,10 +316,10 @@ const openRecipeDetail = (recipe) => {
           color={i <= rating ? "#f4b400" : "rgba(255,255,255,0.5)"}
           style={{ marginRight: 2 }}
         />
-      );
+      )
     }
-    return stars;
-  };
+    return stars
+  }
 
   const renderItem = ({ item }) => (
     <TouchableOpacity 
@@ -338,8 +331,8 @@ const openRecipeDetail = (recipe) => {
       onPress={() => openRecipeDetail(item)}
       onLongPress={() => {
         if (!selectionMode) {
-          setSelectionMode(true);
-          toggleItemSelection(item._id);
+          setSelectionMode(true)
+          toggleItemSelection(item._id)
         }
       }}
     >
@@ -434,7 +427,7 @@ const openRecipeDetail = (recipe) => {
         </View>
       </View>
     </TouchableOpacity>
-  );
+  )
 
   const FilterButton = ({ title, active, onPress, iconName }) => (
     <TouchableOpacity 
@@ -461,10 +454,10 @@ const openRecipeDetail = (recipe) => {
         {title}
       </Text>
     </TouchableOpacity>
-  );
+  )
 
   if (loading && !refreshing) {
-    return <Loader />;
+    return <Loader />
   }
 
   return (
@@ -675,5 +668,5 @@ const openRecipeDetail = (recipe) => {
         }
       />
     </View>
-  );
+  )
 }

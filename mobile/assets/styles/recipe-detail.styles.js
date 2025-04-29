@@ -1,8 +1,8 @@
 // styles/recipe-detail.styles.js
-import { StyleSheet, Dimensions } from "react-native";
-import COLORS from "../../constants/colors";
+import { StyleSheet, Dimensions } from "react-native"
+import COLORS from "../../constants/colors"
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window')
 
 const styles = StyleSheet.create({
   // Main container and background
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     marginTop: -25,
     padding: 20,
     paddingTop: 25,
-    minHeight: height * 0.5, // Ensure it fills the bottom part
+    minHeight: height * 0.5,
   },
   
   // User info
@@ -210,6 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255,255,255,0.6)',
   },
-});
+})
 
-export default styles;
+export default styles

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import {
   View,
   Text,
@@ -8,14 +8,14 @@ import {
   Animated,
   Dimensions,
   TouchableWithoutFeedback
-} from 'react-native';
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../constants/colors";
+} from 'react-native'
+import { Ionicons } from "@expo/vector-icons"
+import COLORS from "../constants/colors"
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get('window')
 
 const MealActionModal = ({ visible, onClose, mealType, onSelectBookmark, onCreateMeal }) => {
-  const modalAnimation = React.useRef(new Animated.Value(0)).current;
+  const modalAnimation = React.useRef(new Animated.Value(0)).current
   
   React.useEffect(() => {
     if (visible) {
@@ -23,47 +23,47 @@ const MealActionModal = ({ visible, onClose, mealType, onSelectBookmark, onCreat
         toValue: 1,
         useNativeDriver: true,
         friction: 8
-      }).start();
+      }).start()
     } else {
       Animated.timing(modalAnimation, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true
-      }).start();
+      }).start()
     }
-  }, [visible]);
+  }, [visible])
 
   const translateY = modalAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: [height, 0]
-  });
+  })
 
   const getMealTitle = () => {
     switch(mealType) {
-      case 'breakfast': return 'Breakfast';
-      case 'lunch': return 'Lunch';
-      case 'dinner': return 'Dinner';
-      default: return 'Meal';
+      case 'breakfast': return 'Breakfast'
+      case 'lunch': return 'Lunch'
+      case 'dinner': return 'Dinner'
+      default: return 'Meal'
     }
-  };
+  }
 
   const getMealIcon = () => {
     switch(mealType) {
-      case 'breakfast': return 'sunny-outline';
-      case 'lunch': return 'restaurant-outline';
-      case 'dinner': return 'moon-outline';
-      default: return 'restaurant-outline';
+      case 'breakfast': return 'sunny-outline'
+      case 'lunch': return 'restaurant-outline'
+      case 'dinner': return 'moon-outline'
+      default: return 'restaurant-outline'
     }
-  };
+  }
 
   const getMealColor = () => {
     switch(mealType) {
-      case 'breakfast': return '#f39c12';
-      case 'lunch': return '#3498db';
-      case 'dinner': return '#9b59b6';
-      default: return COLORS.primary;
+      case 'breakfast': return '#f39c12'
+      case 'lunch': return '#3498db'
+      case 'dinner': return '#9b59b6'
+      default: return COLORS.primary
     }
-  };
+  }
 
   return (
     <Modal
@@ -97,8 +97,8 @@ const MealActionModal = ({ visible, onClose, mealType, onSelectBookmark, onCreat
                 <TouchableOpacity 
                   style={styles.optionButton}
                   onPress={() => {
-                    onSelectBookmark();
-                    onClose();
+                    onSelectBookmark()
+                    onClose()
                   }}
                 >
                   <View style={styles.optionIconContainer}>
@@ -114,8 +114,8 @@ const MealActionModal = ({ visible, onClose, mealType, onSelectBookmark, onCreat
                 <TouchableOpacity 
                   style={styles.optionButton}
                   onPress={() => {
-                    onCreateMeal();
-                    onClose();
+                    onCreateMeal()
+                    onClose()
                   }}
                 >
                   <View style={styles.optionIconContainer}>
@@ -133,8 +133,8 @@ const MealActionModal = ({ visible, onClose, mealType, onSelectBookmark, onCreat
         </View>
       </TouchableWithoutFeedback>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   overlay: {
@@ -206,6 +206,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
   },
-});
+})
 
-export default MealActionModal;
+export default MealActionModal

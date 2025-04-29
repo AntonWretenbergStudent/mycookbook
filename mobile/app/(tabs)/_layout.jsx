@@ -1,11 +1,11 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+import { Tabs } from "expo-router"
+import { Ionicons } from "@expo/vector-icons"
+import COLORS from "../../constants/colors"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { StatusBar } from "expo-status-bar"
 
 export default function TabLayout() {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets()
 
   return (
     <>
@@ -80,5 +80,5 @@ export default function TabLayout() {
         />
       </Tabs>
     </>
-  );
+  )
 }

@@ -1,9 +1,9 @@
-import { View, StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import COLORS from "../constants/colors";
+import { View, StyleSheet } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import COLORS from "../constants/colors"
 
 export default function SafeScreen({ children }) {
-  const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets()
   
   return (
     <View style={styles.outerContainer}>
@@ -20,7 +20,7 @@ export default function SafeScreen({ children }) {
         {children}
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -40,4 +40,4 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1
   }
-});
+})

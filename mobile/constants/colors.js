@@ -11,7 +11,7 @@
   border: "#c8e6c9",
   white: "#ffffff",
   black: "#000000",
-};*/
+}*/
 
 
 // blue/black
@@ -31,7 +31,7 @@
   black: "#000000",
   icon: "#3894e9",
   
-}; 
+}
 
 // RETRO
 /*
@@ -47,7 +47,7 @@ const COLORS = {
   border: "#e2d6c1",
   white: "#ffffff",
   black: "#000000",
-};
+}
 */
 
 // OCEAN
@@ -64,7 +64,7 @@ const COLORS = {
   border: "#bbdefb",
   white: "#ffffff",
   black: "#000000",
-};
+}
 */
 
 // BLOSSOM
@@ -81,7 +81,7 @@ const COLORS = {
   border: "#f8bbd0",
   white: "#ffffff",
   black: "#000000",
-};
+}
 */
 
-export default COLORS;
+export default COLORS

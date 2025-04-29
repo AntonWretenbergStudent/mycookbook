@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -14,24 +14,24 @@ import {
   Platform,
   Image,
   Alert
-} from 'react-native';
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../constants/colors";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+} from 'react-native'
+import { Ionicons } from "@expo/vector-icons"
+import COLORS from "../constants/colors"
+import * as ImagePicker from "expo-image-picker"
+import * as FileSystem from "expo-file-system"
 
-const { height } = Dimensions.get('window');
+const { height } = Dimensions.get('window')
 
 const CustomMealModal = ({ visible, onClose, mealType, onSave }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [showNutrition, setShowNutrition] = useState(false);
-  const [calories, setCalories] = useState('');
-  const [image, setImage] = useState(null);
-  const [imageBase64, setImageBase64] = useState(null);
-  const [showImageOptions, setShowImageOptions] = useState(false);
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [showNutrition, setShowNutrition] = useState(false)
+  const [calories, setCalories] = useState('')
+  const [image, setImage] = useState(null)
+  const [imageBase64, setImageBase64] = useState(null)
+  const [showImageOptions, setShowImageOptions] = useState(false)
   
-  const modalAnimation = React.useRef(new Animated.Value(0)).current;
+  const modalAnimation = React.useRef(new Animated.Value(0)).current
   
   React.useEffect(() => {
     if (visible) {
@@ -39,117 +39,116 @@ const CustomMealModal = ({ visible, onClose, mealType, onSave }) => {
         toValue: 1,
         useNativeDriver: true,
         friction: 8
-      }).start();
+      }).start()
     } else {
       Animated.timing(modalAnimation, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true
-      }).start();
+      }).start()
       
-      // Clear form when closing
-      setName('');
-      setDescription('');
-      setCalories('');
-      setShowNutrition(false);
-      setImage(null);
-      setImageBase64(null);
-      setShowImageOptions(false);
+      setName('')
+      setDescription('')
+      setCalories('')
+      setShowNutrition(false)
+      setImage(null)
+      setImageBase64(null)
+      setShowImageOptions(false)
     }
-  }, [visible]);
+  }, [visible])
 
   const translateY = modalAnimation.interpolate({
     inputRange: [0, this.complete ? 1 : 1],
     outputRange: [height, 0]
-  });
+  })
 
   const getMealTitle = () => {
     switch(mealType) {
-      case 'breakfast': return 'Breakfast';
-      case 'lunch': return 'Lunch';
-      case 'dinner': return 'Dinner';
-      default: return 'Meal';
+      case 'breakfast': return 'Breakfast'
+      case 'lunch': return 'Lunch'
+      case 'dinner': return 'Dinner'
+      default: return 'Meal'
     }
-  };
+  }
 
   const getMealIcon = () => {
     switch(mealType) {
-      case 'breakfast': return 'sunny-outline';
-      case 'lunch': return 'restaurant-outline';
-      case 'dinner': return 'moon-outline';
-      default: return 'restaurant-outline';
+      case 'breakfast': return 'sunny-outline'
+      case 'lunch': return 'restaurant-outline'
+      case 'dinner': return 'moon-outline'
+      default: return 'restaurant-outline'
     }
-  };
+  }
 
   const getMealColor = () => {
     switch(mealType) {
-      case 'breakfast': return '#f39c12';
-      case 'lunch': return '#3498db';
-      case 'dinner': return '#9b59b6';
-      default: return COLORS.primary;
+      case 'breakfast': return '#f39c12'
+      case 'lunch': return '#3498db'
+      case 'dinner': return '#9b59b6'
+      default: return COLORS.primary
     }
-  };
+  }
   
   const requestCameraPermission = async () => {
     if (Platform.OS !== "web") {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status } = await ImagePicker.requestCameraPermissionsAsync()
       if (status !== "granted") {
-        Alert.alert("Permission Denied", "We need camera permissions to take a photo");
-        return false;
+        Alert.alert("Permission Denied", "We need camera permissions to take a photo")
+        return false
       }
-      return true;
+      return true
     }
-    return true;
-  };
+    return true
+  }
   
   const requestGalleryPermission = async () => {
     if (Platform.OS !== "web") {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (status !== "granted") {
-        Alert.alert("Permission Denied", "We need camera roll permissions to select an image");
-        return false;
+        Alert.alert("Permission Denied", "We need camera roll permissions to select an image")
+        return false
       }
-      return true;
+      return true
     }
-    return true;
-  };
+    return true
+  }
   
   const takePhoto = async () => {
     try {
-      const hasPermission = await requestCameraPermission();
-      if (!hasPermission) return;
+      const hasPermission = await requestCameraPermission()
+      if (!hasPermission) return
 
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.1,
         base64: true,
-      });
+      })
 
       if (!result.canceled) {
-        setImage(result.assets[0].uri);
+        setImage(result.assets[0].uri)
         
         if (result.assets[0].base64) {
-          setImageBase64(result.assets[0].base64);
+          setImageBase64(result.assets[0].base64)
         } else {
           const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
             encoding: FileSystem.EncodingType.Base64,
-          });
-          setImageBase64(base64);
+          })
+          setImageBase64(base64)
         }
       }
       
-      setShowImageOptions(false);
+      setShowImageOptions(false)
     } catch (error) {
-      console.log("Error taking photo:", error);
-      Alert.alert("Error", "There was a problem taking the photo");
+      console.log("Error taking photo:", error)
+      Alert.alert("Error", "There was a problem taking the photo")
     }
-  };
+  }
   
   const pickImage = async () => {
     try {
-      const hasPermission = await requestGalleryPermission();
-      if (!hasPermission) return;
+      const hasPermission = await requestGalleryPermission()
+      if (!hasPermission) return
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -157,27 +156,27 @@ const CustomMealModal = ({ visible, onClose, mealType, onSave }) => {
         aspect: [4, 3],
         quality: 0.1,
         base64: true,
-      });
+      })
 
       if (!result.canceled) {
-        setImage(result.assets[0].uri);
+        setImage(result.assets[0].uri)
 
         if (result.assets[0].base64) {
-          setImageBase64(result.assets[0].base64);
+          setImageBase64(result.assets[0].base64)
         } else {
           const base64 = await FileSystem.readAsStringAsync(result.assets[0].uri, {
             encoding: FileSystem.EncodingType.Base64,
-          });
-          setImageBase64(base64);
+          })
+          setImageBase64(base64)
         }
       }
       
-      setShowImageOptions(false);
+      setShowImageOptions(false)
     } catch (error) {
-      console.log("Error picking image:", error);
-      Alert.alert("Error", "There was a problem selecting your image");
+      console.log("Error picking image:", error)
+      Alert.alert("Error", "There was a problem selecting your image")
     }
-  };
+  }
   
   const handleImagePress = () => {
     if (image) {
@@ -188,28 +187,28 @@ const CustomMealModal = ({ visible, onClose, mealType, onSave }) => {
         [
           { text: "Cancel", style: "cancel" },
           { text: "Remove Image", onPress: () => {
-            setImage(null);
-            setImageBase64(null);
+            setImage(null)
+            setImageBase64(null)
           }},
           { text: "Replace Image", onPress: () => setShowImageOptions(true) }
         ]
-      );
+      )
     } else {
       // If no image, show options to add
-      setShowImageOptions(true);
+      setShowImageOptions(true)
     }
-  };
+  }
   
   const handleSave = () => {
-    if (!name) return; // Name is required
+    if (!name) return
     
     // Format image for storage if available
-    let imageUrl = null;
+    let imageUrl = null
     if (image && imageBase64) {
-      const uriParts = image.split(".");
-      const fileType = uriParts[uriParts.length - 1];
-      const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg";
-      imageUrl = `data:${imageType};base64,${imageBase64}`;
+      const uriParts = image.split(".")
+      const fileType = uriParts[uriParts.length - 1]
+      const imageType = fileType ? `image/${fileType.toLowerCase()}` : "image/jpeg"
+      imageUrl = `data:${imageType};base64,${imageBase64}`
     }
     
     const customMeal = {
@@ -220,11 +219,11 @@ const CustomMealModal = ({ visible, onClose, mealType, onSave }) => {
       },
       image: imageUrl,
       isCustom: true
-    };
+    }
     
-    onSave(customMeal);
-    onClose();
-  };
+    onSave(customMeal)
+    onClose()
+  }
 
   return (
     <Modal
@@ -372,8 +371,8 @@ const CustomMealModal = ({ visible, onClose, mealType, onSave }) => {
         </View>
       </TouchableWithoutFeedback>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   overlay: {
@@ -518,6 +517,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-});
+})
 
-export default CustomMealModal;
+export default CustomMealModal

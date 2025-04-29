@@ -1,5 +1,5 @@
-import { StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
+import { StyleSheet } from "react-native"
+import COLORS from "../../constants/colors"
 
 const styles = StyleSheet.create({
   // Main container and background
@@ -206,6 +206,6 @@ const styles = StyleSheet.create({
   footerLoader: {
     marginVertical: 20,
   },
-});
+})
 
-export default styles;
+export default styles

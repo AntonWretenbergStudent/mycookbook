@@ -1,6 +1,6 @@
 // styles/signup.styles.js
-import { StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
+import { StyleSheet } from "react-native"
+import COLORS from "../../constants/colors"
 
 const styles = StyleSheet.create({
   container: {
@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: "600",
   },
-});
+})
 
-export default styles;
+export default styles

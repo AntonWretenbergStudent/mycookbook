@@ -7,20 +7,20 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert
-} from "react-native";
-import styles from "../../assets/styles/login.styles";
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../constants/colors";
-import { useReducer, useState } from "react";
-import { Link } from "expo-router";
+} from "react-native"
+import styles from "../../assets/styles/login.styles"
+import { Ionicons } from "@expo/vector-icons"
+import COLORS from "../../constants/colors"
+import { useReducer, useState } from "react"
+import { Link } from "expo-router"
 import { useRouter } from "expo-router"
-import { useAuthStore } from "../../store/authStore";
+import { useAuthStore } from "../../store/authStore"
 
 export default function Signup() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const { user, isLoading, register, token } = useAuthStore()
 
   const router = useRouter()
@@ -29,7 +29,7 @@ export default function Signup() {
     const result = await register(username, email, password)
 
     if(!result.success) Alert.alert("Error", result.error)
-  };
+  }
 
   return (
     <KeyboardAvoidingView
@@ -143,5 +143,5 @@ export default function Signup() {
         </View>
       </View>
     </KeyboardAvoidingView>
-  );
+  )
 }

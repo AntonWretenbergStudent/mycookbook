@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -11,19 +11,19 @@ import {
   Easing,
   Vibration,
   Alert
-} from 'react-native';
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, useRouter } from "expo-router";
-import COLORS from "../constants/colors";
+} from 'react-native'
+import { Image } from "expo-image"
+import { Ionicons } from "@expo/vector-icons"
+import { LinearGradient } from 'expo-linear-gradient'
+import { useLocalSearchParams, useRouter } from "expo-router"
+import COLORS from "../constants/colors"
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window')
 const HOLD_DURATION = 2000
 
 export default function MealDetailScreen() {
-  const params = useLocalSearchParams();
-  const router = useRouter();
+  const params = useLocalSearchParams()
+  const router = useRouter()
   
   // Get meal data from params
   const meal = {
@@ -33,20 +33,20 @@ export default function MealDetailScreen() {
     image: params.image || null,
     nutrition: (() => {
       try {
-        return params.nutrition ? JSON.parse(params.nutrition) : { calories: 0 };
+        return params.nutrition ? JSON.parse(params.nutrition) : { calories: 0 }
       } catch (e) {
-        console.warn("Error parsing nutrition data", e);
-        return { calories: 0 };
+        console.warn("Error parsing nutrition data", e)
+        return { calories: 0 }
       }
     })()
-  };
+  }
   
   // Button animations and state
-  const [isPressed, setIsPressed] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const buttonScale = useRef(new Animated.Value(1)).current;
-  const progressWidth = useRef(new Animated.Value(0)).current;
-  const holdTimer = useRef(null);
+  const [isPressed, setIsPressed] = useState(false)
+  const [isCompleted, setIsCompleted] = useState(false)
+  const buttonScale = useRef(new Animated.Value(1)).current
+  const progressWidth = useRef(new Animated.Value(0)).current
+  const holdTimer = useRef(null)
   
   // Animation configurations
   const scaleAnimation = Animated.timing(buttonScale, {
@@ -54,94 +54,94 @@ export default function MealDetailScreen() {
     duration: 200,
     useNativeDriver: true,
     easing: Easing.out(Easing.ease),
-  });
+  })
   
   const resetScaleAnimation = Animated.timing(buttonScale, {
     toValue: 1,
     duration: 200,
     useNativeDriver: true,
     easing: Easing.out(Easing.ease),
-  });
+  })
   
   const progressAnimation = Animated.timing(progressWidth, {
     toValue: 1,
     duration: HOLD_DURATION,
     useNativeDriver: false,
     easing: Easing.linear,
-  });
+  })
   
   // Handle button press start
   const handlePressIn = () => {
-    setIsPressed(true);
-    scaleAnimation.start();
-    progressAnimation.start();
+    setIsPressed(true)
+    scaleAnimation.start()
+    progressAnimation.start()
     
     // Start timer for hold duration
     holdTimer.current = setTimeout(() => {
-      Vibration.vibrate(100); // Short vibration feedback
-      setIsCompleted(true);
+      Vibration.vibrate(100) // Short vibration feedback
+      setIsCompleted(true)
       Alert.alert(
         "Meal Completed",
         `Great job! You've completed this ${getMealTitle().toLowerCase()}.`,
         [{ text: "OK", onPress: () => router.back() }]
-      );
-    }, HOLD_DURATION);
-  };
+      )
+    }, HOLD_DURATION)
+  }
   
   // Handle button press end
   const handlePressOut = () => {
     if (!isCompleted) {
-      setIsPressed(false);
-      resetScaleAnimation.start();
-      progressAnimation.stop();
-      progressWidth.setValue(0);
+      setIsPressed(false)
+      resetScaleAnimation.start()
+      progressAnimation.stop()
+      progressWidth.setValue(0)
       
       if (holdTimer.current) {
-        clearTimeout(holdTimer.current);
+        clearTimeout(holdTimer.current)
       }
     }
-  };
+  }
   
   const getMealColor = () => {
     switch(meal.type) {
-      case 'breakfast': return '#f39c12';
-      case 'lunch': return '#3498db';
-      case 'dinner': return '#9b59b6';
-      default: return COLORS.primary;
+      case 'breakfast': return '#f39c12'
+      case 'lunch': return '#3498db'
+      case 'dinner': return '#9b59b6'
+      default: return COLORS.primary
     }
-  };
+  }
   
   const getMealIcon = () => {
     switch(meal.type) {
-      case 'breakfast': return 'sunny';
-      case 'lunch': return 'restaurant';
-      case 'dinner': return 'moon';
-      default: return 'restaurant';
+      case 'breakfast': return 'sunny'
+      case 'lunch': return 'restaurant'
+      case 'dinner': return 'moon'
+      default: return 'restaurant'
     }
-  };
+  }
   
   const getMealTitle = () => {
     switch(meal.type) {
-      case 'breakfast': return 'Breakfast';
-      case 'lunch': return 'Lunch';
-      case 'dinner': return 'Dinner';
-      default: return 'Meal';
+      case 'breakfast': return 'Breakfast'
+      case 'lunch': return 'Lunch'
+      case 'dinner': return 'Dinner'
+      default: return 'Meal'
     }
-  };
+  }
   
-  const mealColor = getMealColor();
+  const mealColor = getMealColor()
   
   // Clean up animations and timers
   useEffect(() => {
     return () => {
       if (holdTimer.current) {
-        clearTimeout(holdTimer.current);
+        clearTimeout(holdTimer.current)
       }
-      progressAnimation.stop();
-      scaleAnimation.stop();
-      resetScaleAnimation.stop();
-    };
-  }, []);
+      progressAnimation.stop()
+      scaleAnimation.stop()
+      resetScaleAnimation.stop()
+    }
+  }, [])
   
   return (
     <View style={styles.container}>
@@ -301,7 +301,7 @@ export default function MealDetailScreen() {
         </Animated.View>
       </ScrollView>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -538,4 +538,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
   },
-});
+})
