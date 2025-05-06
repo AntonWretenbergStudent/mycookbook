@@ -47,6 +47,8 @@ Use this EXACT format for each recipe, and use metric measurements (dl, l, g, kg
 
 Recipe 1: [Recipe Name]
 
+Estimated cooking-time
+
 Description: [Brief description of what this dish is]
 
 Ingredients:
@@ -61,6 +63,8 @@ Instructions:
 
 Recipe 2: [Recipe Name]
 
+Estimated cooking-time
+
 Description: [Brief description of what this dish is]
 
 Ingredients:
@@ -74,6 +78,8 @@ Instructions:
 3. [etc.]
 
 Recipe 3: [Recipe Name]
+
+Estimated cooking-time
 
 Description: [Brief description of what this dish is]
 

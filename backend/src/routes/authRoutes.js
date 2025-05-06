@@ -8,9 +8,30 @@ const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "15d" })
 }
 
-router.post("/register", async (req, res) => {
+// Debug middleware specifically for auth routes
+router.use((req, res, next) => {
+  console.log('Auth route request:')
+  console.log('- Path:', req.path)
+  console.log('- Method:', req.method)
+  console.log('- Content-Type:', req.headers['content-type'])
+  console.log('- Body:', JSON.stringify(req.body))
+  next()
+})
+
+router.post("/register", async (req, res, next) => {
   try {
-    const { email, username, password } = req.body
+    // Check if req.body exists
+    if (!req.body) {
+      console.error('Request body is undefined')
+      return res.status(400).json({ message: "No request body received" })
+    }
+    
+    // Safely extract fields with defaults
+    const email = req.body.email || ''
+    const username = req.body.username || ''
+    const password = req.body.password || ''
+    
+    console.log('Registration attempt:', { email, username, password: password ? '[REDACTED]' : 'missing' })
 
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields are required" })
@@ -61,14 +82,24 @@ router.post("/register", async (req, res) => {
       },
     })
   } catch (error) {
-    console.log("Error in register route", error)
-    res.status(500).json({ message: "Internal server error" })
+    console.error("Error in register route:", error)
+    // Pass to global error handler
+    next(error)
   }
 })
 
-router.post("/login", async (req, res) => {
+router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body
+    // Check if req.body exists
+    if (!req.body) {
+      console.error('Request body is undefined in login')
+      return res.status(400).json({ message: "No request body received" })
+    }
+    
+    const email = req.body.email || ''
+    const password = req.body.password || ''
+    
+    console.log('Login attempt:', { email, password: password ? '[REDACTED]' : 'missing' })
 
     if (!email || !password)
       return res.status(400).json({ message: "All fields are required" })
@@ -93,8 +124,8 @@ router.post("/login", async (req, res) => {
       },
     })
   } catch (error) {
-    console.log("Error in login route", error)
-    res.status(500).json({ message: "Internal server error" })
+    console.error("Error in login route:", error)
+    next(error)
   }
 })
 
