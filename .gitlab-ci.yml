@@ -9,27 +9,31 @@ lint-job:
   stage: lint
   image: node:20-bullseye
   script:
+    - echo "Finding package.json..."
+    - find . -name "package.json" -type f
+    - cd mobile  # Change this to the directory where your package.json is located
     - echo "Installing dependencies..."
     - npm install
-    - npx install-peerdeps --dev @lnu/eslint-config # Update this to your own ESLint config if needed
+    - npx install-peerdeps --dev @lnu/eslint-config
     - echo "Linting..."
-    - npx eslint "src/**/*.js" || exit 1 # or .ts if using TypeScript
+    - npx eslint "src/**/*.js" || exit 1
 
 # Build the application
 build-job:
   stage: build
   image: node:20-bullseye
   script:
+    - cd mobile  # Change this to match the directory above
     - echo "Installing dependencies..."
     - npm install
     - echo "Building application..."
-    - npm run build # Adjust this if your build command is different
+    - npm run build
   artifacts:
     paths:
-      - build/ # Adjust this to your build output directory
-      - node_modules/
-      - package.json
-      - package-lock.json
+      - mobile/build/
+      - mobile/node_modules/
+      - mobile/package.json
+      - mobile/package-lock.json
     expire_in: 1 week
   needs:
     - lint-job

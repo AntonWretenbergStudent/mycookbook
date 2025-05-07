@@ -536,6 +536,6 @@ const styles = StyleSheet.create({
   holdInstructionText: {
     color: 'rgba(255,255,255,0.6)',
     fontSize: 14,
-    marginTop: 8,
+    marginTop: 9,
   },
 })

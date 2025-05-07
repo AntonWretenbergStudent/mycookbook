@@ -55,7 +55,6 @@ export default function RootLayout() {
   // Handle splash screen
   useEffect(() => {
     const hideSplash = async () => {
-      // Only hide splash when fonts are loaded and auth check is complete
       if (fontsLoaded && !isCheckingAuth) {
         console.log("Hiding splash screen")
         await SplashScreen.hideAsync()
@@ -65,7 +64,6 @@ export default function RootLayout() {
     hideSplash()
   }, [fontsLoaded, isCheckingAuth])
 
-  // Show loading indicator while checking auth
   if (!fontsLoaded || isCheckingAuth) {
     return (
       <View style={{ 
