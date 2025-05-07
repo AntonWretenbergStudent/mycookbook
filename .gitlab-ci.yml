@@ -1,0 +1,54 @@
+# GitLab CI/CD configuration file for 1dv613 project course
+stages:
+  - lint
+  - build
+  - deploy
+
+# Code linting
+lint-job:
+  stage: lint
+  image: node:20-bullseye
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+    - npx install-peerdeps --dev @lnu/eslint-config # Update this to your own ESLint config if needed
+    - echo "Linting..."
+    - npx eslint "src/**/*.js" || exit 1 # or .ts if using TypeScript
+
+# Build the application
+build-job:
+  stage: build
+  image: node:20-bullseye
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+    - echo "Building application..."
+    - npm run build # Adjust this if your build command is different
+  artifacts:
+    paths:
+      - build/ # Adjust this to your build output directory
+      - node_modules/
+      - package.json
+      - package-lock.json
+    expire_in: 1 week
+  needs:
+    - lint-job
+
+# Deploy the application to Render using the API
+deploy-job:
+  stage: deploy
+  image: curlimages/curl:latest
+  environment:
+    name: production
+    url: https://mycookbook-nijb.onrender.com
+  script:
+    - |
+      echo "Deploying to Render..."
+      curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+        -H "Authorization: Bearer $RENDER_API_KEY" \
+        -H "Content-Type: application/json"
+      echo "Deployment triggered successfully!"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  needs:
+    - build-job
