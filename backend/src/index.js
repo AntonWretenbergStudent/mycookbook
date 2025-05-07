@@ -70,7 +70,7 @@ app.use("/api/todolists", todoListRoutes)
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err)
   res.status(500).json({ message: "Internal server error", error: err.message })
-});
+})
 
 // 404 handler - should be after all other routes
 app.use((req, res) => {
@@ -84,4 +84,4 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
   connectDB()
-});
+})
