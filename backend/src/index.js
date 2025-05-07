@@ -9,7 +9,10 @@ import aiRoutes from "./routes/aiRoutes.js"
 import todoListRoutes from "./routes/todoListRoutes.js"
 import morgan from "morgan" 
 import { connectDB } from "./lib/db.js"
+import job from "./lib/cron.js"
 
+
+job.start()
 const app = express()
 const PORT = process.env.PORT || 4000
 
