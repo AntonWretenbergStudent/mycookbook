@@ -1,1 +1,1 @@
-export const API_URI="http://localhost:4000/api"
+export const API_URI="https://mycookbook-nijb.onrender.com/api"

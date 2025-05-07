@@ -364,7 +364,7 @@ export default function AskAIScreen() {
       }
 
       // Call API
-      const response = await fetch(`${API_URI}/ai/suggestions`, {
+      const response = await fetch(`${API_URI}/suggestions`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
