@@ -78,7 +78,7 @@ export default function MealDetailScreen() {
     
     // Start timer for hold duration
     holdTimer.current = setTimeout(() => {
-      Vibration.vibrate(100) // Short vibration feedback
+      Vibration.vibrate(500) // Short vibration feedback
       setIsCompleted(true)
       Alert.alert(
         "Meal Completed",

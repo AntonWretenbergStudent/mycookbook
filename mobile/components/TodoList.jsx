@@ -11,7 +11,8 @@ import {
   Platform,
   Alert,
   Animated,
-  Modal
+  Modal,
+  Keyboard
 } from 'react-native'
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from 'expo-linear-gradient'
@@ -43,6 +44,7 @@ export default function TodoList({ route }) {
   const { listId } = route?.params || { listId: null }
   const router = useRouter()
   const { token } = useAuthStore()
+  const scrollViewRef = useRef(null)
   
   // State variables
   const [todoList, setTodoList] = useState({
@@ -59,6 +61,7 @@ export default function TodoList({ route }) {
   const [showCompleted, setShowCompleted] = useState(true)
   const [settingsVisible, setSettingsVisible] = useState(false)
   const [themeFilter, setThemeFilter] = useState('all')
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
   
   // Animation values
   const settingsMenuHeight = useRef(new Animated.Value(0)).current
@@ -70,6 +73,32 @@ export default function TodoList({ route }) {
       fetchTodoList()
     }
   }, [listId])
+  
+  // Keyboard listeners
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height)
+        // Scroll to the input when keyboard shows
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true })
+        }, 100)
+      }
+    )
+    
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0)
+      }
+    )
+
+    return () => {
+      keyboardDidShowListener.remove()
+      keyboardDidHideListener.remove()
+    }
+  }, [])
   
   // Fetch todo list from API
   const fetchTodoList = async () => {
@@ -262,6 +291,12 @@ export default function TodoList({ route }) {
   // Handle open task input
   const handleOpenTaskInput = () => {
     setShowTaskInput(true)
+    
+    // Add a small delay to ensure the component has updated
+    setTimeout(() => {
+      // Scroll to the input when it appears
+      scrollViewRef.current?.scrollToEnd({ animated: true })
+    }, 300)
   }
 
   // Toggle completed section visibility
@@ -609,9 +644,11 @@ export default function TodoList({ route }) {
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.mainContent}
-        keyboardVerticalOffset={100}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 120 : 20}
+        enabled
       >
         <ScrollView
+          ref={scrollViewRef}
           style={styles.scrollContainer}
           contentContainerStyle={styles.scrollContentContainer}
           showsVerticalScrollIndicator={false}
@@ -620,13 +657,17 @@ export default function TodoList({ route }) {
             {renderActiveTasks()}
             {renderCompletedTasks()}
             {/* Increased height to provide proper spacing above the add button */}
-            <View style={{height: 180}} />
+            <View style={{height: showTaskInput ? (280 + keyboardHeight) : 180}} />
           </View>
         </ScrollView>
         
-        {/* Add Task Button */}
+        {/* Add Task UI */}
         {showTaskInput ? (
-          <View style={styles.addTaskInputContainer}>
+          <View style={[
+            styles.addTaskInputContainer,
+            // Add extra bottom margin when keyboard is visible
+            { marginBottom: keyboardHeight > 0 ? keyboardHeight : 0 }
+          ]}>
             <View style={styles.taskInputWrapper}>
               <TouchableOpacity style={styles.taskCheckbox} />
               <TextInput
@@ -666,7 +707,11 @@ export default function TodoList({ route }) {
           </View>
         ) : (
           <TouchableOpacity 
-            style={styles.fixedAddTaskButton}
+            style={[
+              styles.fixedAddTaskButton,
+              // Add bottom margin when keyboard is visible
+              { bottom: keyboardHeight > 0 ? keyboardHeight + 10 : 30 }
+            ]}
             onPress={handleOpenTaskInput}
           >
             <Ionicons name="add" size={24} color="white" />
@@ -879,9 +924,9 @@ const styles = {
   // Add task button - IMPROVED
   fixedAddTaskButton: {
     position: 'absolute',
-    bottom: 30,
-    left: 20, // Added horizontal padding
-    right: 20, // Added horizontal padding
+    bottom: 30, // This will be adjusted when keyboard is visible
+    left: 20,
+    right: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -900,13 +945,15 @@ const styles = {
   // Add task input
   addTaskInputContainer: {
     position: 'absolute',
-    bottom: 30,
-    left: 20, // Added horizontal padding
-    right: 20, // Added horizontal padding
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    bottom: 30, // This will be adjusted when keyboard is visible
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.8)', // Slightly darker background
     borderRadius: 10,
     padding: 15,
     zIndex: 10, // Ensure it stays on top
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)', // Subtle border for visibility
   },
   taskInputWrapper: {
     flexDirection: 'row',
