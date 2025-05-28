@@ -108,7 +108,7 @@ export default function AskAIScreen() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5,
+        quality: 0.3, // Reduced quality for smaller file size
         base64: true,
       })
 
@@ -118,13 +118,18 @@ export default function AskAIScreen() {
         if (result.assets[0].base64) {
           setImageBase64(result.assets[0].base64)
         } else {
-          const base64 = await FileSystem.readAsStringAsync(
-            result.assets[0].uri,
-            {
-              encoding: FileSystem.EncodingType.Base64,
-            }
-          )
-          setImageBase64(base64)
+          try {
+            const base64 = await FileSystem.readAsStringAsync(
+              result.assets[0].uri,
+              {
+                encoding: FileSystem.EncodingType.Base64,
+              }
+            )
+            setImageBase64(base64)
+          } catch (error) {
+            console.error("Error reading file as base64:", error)
+            Alert.alert("Error", "Failed to process the image")
+          }
         }
       }
     } catch (error) {
@@ -148,7 +153,7 @@ export default function AskAIScreen() {
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5,
+        quality: 0.3, // Reduced quality for smaller file size
         base64: true,
       })
 
@@ -158,13 +163,18 @@ export default function AskAIScreen() {
         if (result.assets[0].base64) {
           setImageBase64(result.assets[0].base64)
         } else {
-          const base64 = await FileSystem.readAsStringAsync(
-            result.assets[0].uri,
-            {
-              encoding: FileSystem.EncodingType.Base64,
-            }
-          )
-          setImageBase64(base64)
+          try {
+            const base64 = await FileSystem.readAsStringAsync(
+              result.assets[0].uri,
+              {
+                encoding: FileSystem.EncodingType.Base64,
+              }
+            )
+            setImageBase64(base64)
+          } catch (error) {
+            console.error("Error reading file as base64:", error)
+            Alert.alert("Error", "Failed to process the image")
+          }
         }
       }
     } catch (error) {
@@ -184,7 +194,7 @@ export default function AskAIScreen() {
   const formatAIResponse = (responseText) => {
     if (!responseText) return []
     
-    console.log("AI response:", responseText)
+    console.log("AI response received (length):", responseText.length)
 
     const recipes = []
     
@@ -351,20 +361,24 @@ export default function AskAIScreen() {
 
       if (activeTab === "text") {
         requestData = {
-          ingredients: ingredients,
           type: "text",
+          ingredients: ingredients,
         }
+        
+        console.log(`Sending text request with ${ingredients.length} ingredients`)
       } else {
         // Format the image data for API
         const imageData = `data:image/jpeg;base64,${imageBase64}`
         requestData = {
-          image: imageData,
           type: "image",
+          image: imageData,
         }
+        
+        console.log('Sending image request')
       }
-
-      // Call API
-      const response = await fetch(`${API_URI}/suggestions`, {
+      
+      // Call API - correct endpoint
+      const response = await fetch(`${API_URI}/ai/suggestions`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -372,22 +386,36 @@ export default function AskAIScreen() {
         },
         body: JSON.stringify(requestData),
       })
-
+      
+      console.log('Response status:', response.status)
+      
+      // Try to parse the response
+      const responseData = await response.json()
+      
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to get suggestions")
+        console.error('Error response:', responseData)
+        throw new Error(responseData.message || "Failed to get suggestions")
       }
 
-      const data = await response.json()
-      setAiResponse(data.response)
+      console.log("API response received successfully")
+      
+      if (!responseData.response) {
+        throw new Error('Invalid response format from server')
+      }
+      
+      setAiResponse(responseData.response)
       
       // Parse the AI response
-      const recipes = formatAIResponse(data.response)
+      const recipes = formatAIResponse(responseData.response)
       setParsedRecipes(recipes)
       
     } catch (error) {
       console.error("Error getting AI suggestions:", error)
-      Alert.alert("Error", error.message || "Something went wrong")
+      Alert.alert(
+        "Error", 
+        "Failed to get recipe suggestions. Please try again." + 
+        (error.message ? `\n\nDetails: ${error.message}` : "")
+      )
     } finally {
       setLoading(false)
     }
@@ -461,7 +489,7 @@ export default function AskAIScreen() {
     if (activeTab === "text") {
       return (
         <View style={styles.inputSection}>
-          <Text style={styles.sectionTitle}>Enter Your Ingredients</Text>
+          <Text style={styles.sectionTitle}>Enter Yoooooouuuuuur Ingredients</Text>
           <Text style={styles.sectionSubtitle}>
             List the ingredients you have, and I'll suggest recipes you can make
           </Text>
